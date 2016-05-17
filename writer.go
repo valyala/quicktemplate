@@ -85,12 +85,17 @@ func (w *QWriter) D(n int) {
 	ReleaseByteBuffer(bb)
 }
 
-// F writes f to w.
-func (w *QWriter) F(f float64) {
+// FP writes f with prec to w.
+func (w *QWriter) FP(f float64, prec int) {
 	bb := AcquireByteBuffer()
-	bb.B = strconv.AppendFloat(bb.B, f, 'f', -1, 64)
+	bb.B = strconv.AppendFloat(bb.B, f, 'f', prec, 64)
 	w.w.Write(bb.B)
 	ReleaseByteBuffer(bb)
+}
+
+// F writes f to w.
+func (w *QWriter) F(f float64) {
+	w.FP(f, -1)
 }
 
 // Q writes quoted json-safe s to w.

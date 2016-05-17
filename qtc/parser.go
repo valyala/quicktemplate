@@ -433,6 +433,19 @@ func (p *parser) parseIf() error {
 func (p *parser) tryParseCommonTags(tagBytes []byte) (bool, error) {
 	s := p.s
 	tagNameStr := string(tagBytes)
+
+	// parse precision for float
+	prec := ""
+	if strings.HasPrefix(tagNameStr, "f.") {
+		if i := strings.Index(tagNameStr, "="); i != -1 {
+			prec = tagNameStr[2:i]
+			tagNameStr = "f="
+		} else {
+			prec = tagNameStr[2:]
+			tagNameStr = "f"
+		}
+	}
+
 	switch tagNameStr {
 	case "s", "v", "d", "f", "q", "z", "j", "u",
 		"s=", "v=", "d=", "f=", "q=", "z=", "j=", "u=",
@@ -454,7 +467,11 @@ func (p *parser) tryParseCommonTags(tagBytes []byte) (bool, error) {
 			tagNameStr = tagNameStr[:len(tagNameStr)-1]
 		}
 		tagNameStr = strings.ToUpper(tagNameStr)
-		p.Printf("qw422016.%s%s(%s)", filter, tagNameStr, t.Value)
+		if len(prec) > 0 {
+			p.Printf("qw422016.%s%s(%s, %s)", filter, "FC", t.Value, prec)
+		} else {
+			p.Printf("qw422016.%s%s(%s)", filter, tagNameStr, t.Value)
+		}
 	case "=":
 		t, err := expectTagContents(s)
 		if err != nil {
