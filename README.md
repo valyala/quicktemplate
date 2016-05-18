@@ -195,6 +195,7 @@ other output tags:
 
   * `{%d num %}` for integers.
   * `{%f float %}` for float64.
+  * `{%f.2 float %}` optionally you can specify precision for float64.
   * `{%sz bytes %}` for byte slices.
   * `{%q str %}` and `{%qz bytes %}` for json-compatible quoted strings.
   * `{%j str %}` and `{%jz bytes %}` for embedding str into json string. Unlike `{%q str %}`
