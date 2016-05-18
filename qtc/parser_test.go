@@ -99,6 +99,11 @@ func TestParseOutputTagSuccess(t *testing.T) {
 
 	// url-encoded string
 	testParseSuccess(t, `{% func A() %}{%u "fooab" %}{%endfunc%}`)
+
+	// float precision
+	testParseSuccess(t, `{% func A() %}{%f.2 3.1415926535 %}{%endfunc%}`)
+	testParseSuccess(t, `{% func A() %}{%f.2= 3.1415926535 %}{%endfunc%}`)
+	testParseSuccess(t, `{% func A() %}{%f.= 3.1415926535 %}{%endfunc%}`)
 }
 
 func TestParseOutputTagFailure(t *testing.T) {
