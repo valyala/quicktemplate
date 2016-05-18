@@ -194,7 +194,7 @@ is used for embedding template function calls. Quicktemplate supports also
 other output tags:
 
   * `{%d num %}` for integers.
-  * `{%f float %}` for float64.
+  * `{%f float %}` for float64. Also you can specify precision for float64, e.g. `{%f.2 float %}`
   * `{%sz bytes %}` for byte slices.
   * `{%q str %}` and `{%qz bytes %}` for json-compatible quoted strings.
   * `{%j str %}` and `{%jz bytes %}` for embedding str into json string. Unlike `{%q str %}`

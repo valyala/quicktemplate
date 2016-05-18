@@ -283,7 +283,7 @@ func (s *scanner) readTagName() bool {
 			s.nextTokenID = tagContents
 			return true
 		}
-		if (s.c >= 'a' && s.c <= 'z') || (s.c >= 'A' && s.c <= 'Z') || (s.c >= '0' && s.c <= '9') || s.c == '=' {
+		if (s.c >= 'a' && s.c <= 'z') || (s.c >= 'A' && s.c <= 'Z') || (s.c >= '0' && s.c <= '9') || s.c == '=' || s.c == '.' {
 			s.appendByte()
 			if !s.nextByte() {
 				return false
