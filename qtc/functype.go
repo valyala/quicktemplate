@@ -88,7 +88,11 @@ func parseFuncDef(b []byte) (*funcType, error) {
 			if n == nil {
 				return nil, fmt.Errorf("func cannot contain untyped arguments")
 			}
-			tmp = append(tmp, n.Name)
+			if _, isVariadic := f.Type.(*ast.Ellipsis); isVariadic {
+				tmp = append(tmp, n.Name+"...")
+			} else {
+				tmp = append(tmp, n.Name)
+			}
 		}
 	}
 	argNames := strings.Join(tmp, ", ")

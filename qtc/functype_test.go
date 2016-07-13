@@ -104,6 +104,11 @@ func TestParseFuncDefSuccess(t *testing.T) {
 	testParseFuncDefSuccess(t, "(t TPL) Head(h1, h2 func(x, y int), h3 map[int]struct{})", "(t TPL) Head(h1, h2 func(x, y int), h3 map[int]struct{}) string",
 		"(t TPL) StreamHead(qw422016 *qt422016.Writer, h1, h2 func(x, y int), h3 map[int]struct{})", "t.StreamHead(qw422016, h1, h2, h3)",
 		"(t TPL) WriteHead(qq422016 qtio422016.Writer, h1, h2 func(x, y int), h3 map[int]struct{})", "t.WriteHead(qq422016, h1, h2, h3)")
+
+	// method with variadic arguments
+	testParseFuncDefSuccess(t, "(t TPL) Head(name string, num int, otherNames ...string)", "(t TPL) Head(name string, num int, otherNames ...string) string",
+		"(t TPL) StreamHead(qw422016 *qt422016.Writer, name string, num int, otherNames ...string)", "t.StreamHead(qw422016, name, num, otherNames...)",
+		"(t TPL) WriteHead(qq422016 qtio422016.Writer, name string, num int, otherNames ...string)", "t.WriteHead(qq422016, name, num, otherNames...)")
 }
 
 func TestParseFuncDefFailure(t *testing.T) {
