@@ -11,7 +11,15 @@ It should contains all the quicktemplate stuff.
 			S: "foobar",
 		}
 	%}
-	Embedded func template: {%= embeddedFunc(p) %}
+	Embedded func template:
+		plain: {%= embeddedFunc(p) %}
+		html-escaped: {%=h embeddedFunc(p) %}
+		url-escaped: {%=u embeddedFunc(p) %}
+		quoted json string: {%=q embeddedFunc(p) %}
+		unquoted json string: {%=j embeddedFunc(p) %}
+		html-escaped url-escaped: {%=uh embeddedFunc(p) %}
+		html-escaped quoted json string: {%=qh embeddedFunc(p) %}
+		html-escaped unquoted json string: {%=jh embeddedFunc(p) %}
 
 	Html-escaped output tags:
 	<ul>

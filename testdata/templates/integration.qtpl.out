@@ -2,12 +2,25 @@
 	Output tags` verification.
 
 	
-	Embedded func template: 
+	Embedded func template:
+		plain: 
 	Page's header: Header
 	Body: <b>
 	S=&quot;foobar&quot;
 </b>
 
+		html-escaped: 
+	Page&#39;s header: Header
+	Body: &lt;b&gt;
+	S=&amp;quot;foobar&amp;quot;
+&lt;/b&gt;
+
+		url-escaped: %0A%09Page%27s+header%3A+Header%0A%09Body%3A+%3Cb%3E%0A%09S%3D%26quot%3Bfoobar%26quot%3B%0A%3C%2Fb%3E%0A
+		quoted json string: "\n\tPage\u0027s header: Header\n\tBody: \u003cb>\n\tS=&quot;foobar&quot;\n\u003c/b>\n"
+		unquoted json string: \n\tPage\u0027s header: Header\n\tBody: \u003cb>\n\tS=&quot;foobar&quot;\n\u003c/b>\n
+		html-escaped url-escaped: %0A%09Page%27s+header%3A+Header%0A%09Body%3A+%3Cb%3E%0A%09S%3D%26quot%3Bfoobar%26quot%3B%0A%3C%2Fb%3E%0A
+		html-escaped quoted json string: &quot;\n\tPage\u0027s header: Header\n\tBody: \u003cb&gt;\n\tS=&amp;quot;foobar&amp;quot;\n\u003c/b&gt;\n&quot;
+		html-escaped unquoted json string: \n\tPage\u0027s header: Header\n\tBody: \u003cb&gt;\n\tS=&amp;quot;foobar&amp;quot;\n\u003c/b&gt;\n
 
 	Html-escaped output tags:
 	<ul>
@@ -54,7 +67,15 @@ It should contains all the quicktemplate stuff.
 			S: "foobar",
 		}
 	%}
-	Embedded func template: {%= embeddedFunc(p) %}
+	Embedded func template:
+		plain: {%= embeddedFunc(p) %}
+		html-escaped: {%=h embeddedFunc(p) %}
+		url-escaped: {%=u embeddedFunc(p) %}
+		quoted json string: {%=q embeddedFunc(p) %}
+		unquoted json string: {%=j embeddedFunc(p) %}
+		html-escaped url-escaped: {%=uh embeddedFunc(p) %}
+		html-escaped quoted json string: {%=qh embeddedFunc(p) %}
+		html-escaped unquoted json string: {%=jh embeddedFunc(p) %}
 
 	Html-escaped output tags:
 	<ul>

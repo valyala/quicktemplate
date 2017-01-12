@@ -219,15 +219,25 @@ other output tags:
     the given str.
   * `{%v anything %}` is equivalent to `%v` in [printf-like functions](https://golang.org/pkg/fmt/).
 
-All these output tags produce html-safe output, i.e. they escape `<` to `&lt;`,
-`>` to `&gt;`, etc. If you don't want html-safe output, then just put `=` after
-the tag. For example: `{%s= "<h1>This h1 won't be escaped</h1>" %}`.
+All the output tags except of `{%= F() %}` produce html-safe output, i.e. they
+escape `<` to `&lt;`, `>` to `&gt;`, etc. If you don't want html-safe output,
+then just put `=` after the tag. For example: `{%s= "<h1>This h1 won't be escaped</h1>" %}`.
 
 As you may notice `{%= F() %}` and `{%s= F() %}` produce the same output for `{% func F() %}`.
 But the first one is optimized for speed - it avoids memory allocations and copy.
 So stick to it when embedding template function calls.
 
-All the ouptut tags except of `{%= F() %}` may contain arbitrary valid
+Additionally, the following extensions are supported for `{%= F() %}`:
+
+  * `{%=h F() %}` produces html-escaped output.
+  * `{%=u F() %}` produces [URL-encoded](https://en.wikipedia.org/wiki/Percent-encoding) output.
+  * `{%=q F() %}` produces quoted json string.
+  * `{%=j F() %}` produces json string without quotes.
+  * `{%=uh F() %}` produces html-safe URL-encoded output.
+  * `{%=qh F() %}` produces html-safe quoted json string.
+  * `{%=jh F() %}` produces html-safe json string without quotes.
+
+All the output tags except of `{%= F() %}` family may contain arbitrary valid
 Go expression instead of just identifier. For example:
 
 ```qtpl

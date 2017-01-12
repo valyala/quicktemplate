@@ -454,44 +454,19 @@ func (p *parser) parseIf() error {
 }
 
 func (p *parser) tryParseCommonTags(tagBytes []byte) (bool, error) {
-	s := p.s
 	tagNameStr, prec := splitTagNamePrec(string(tagBytes))
 	switch tagNameStr {
 	case "s", "v", "d", "f", "q", "z", "j", "u",
 		"s=", "v=", "d=", "f=", "q=", "z=", "j=", "u=",
 		"sz", "qz", "jz", "uz",
 		"sz=", "qz=", "jz=", "uz=":
-		t, err := expectTagContents(s)
-		if err != nil {
+		if err := p.parseOutputTag(tagNameStr, prec); err != nil {
 			return false, err
 		}
-		if err = validateOutputTagValue(t.Value); err != nil {
-			return false, fmt.Errorf("invalid output tag value at %s: %s", s.Context(), err)
-		}
-		filter := "N()."
-		switch tagNameStr {
-		case "s", "v", "q", "z", "j", "sz", "qz", "jz":
-			filter = "E()."
-		}
-		if strings.HasSuffix(tagNameStr, "=") {
-			tagNameStr = tagNameStr[:len(tagNameStr)-1]
-		}
-		if tagNameStr == "f" && prec >= 0 {
-			p.Printf("qw%s.N().FPrec(%s, %d)", mangleSuffix, t.Value, prec)
-		} else {
-			tagNameStr = strings.ToUpper(tagNameStr)
-			p.Printf("qw%s.%s%s(%s)", mangleSuffix, filter, tagNameStr, t.Value)
-		}
-	case "=":
-		t, err := expectTagContents(s)
-		if err != nil {
+	case "=", "=h", "=u", "=uh", "=q", "=qh", "=j", "=jh":
+		if err := p.parseOutputFunc(tagNameStr); err != nil {
 			return false, err
 		}
-		f, err := parseFuncCall(t.Value)
-		if err != nil {
-			return false, fmt.Errorf("error at %s: %s", s.Context(), err)
-		}
-		p.Printf("%s", f.CallStream("qw"+mangleSuffix))
 	case "return":
 		if err := p.skipAfterTag(tagNameStr); err != nil {
 			return false, err
@@ -678,6 +653,68 @@ func (p *parser) parseFuncCode() error {
 		return fmt.Errorf("invalid code at %s: %s", p.s.Context(), err)
 	}
 	p.Printf("%s\n", t.Value)
+	return nil
+}
+
+func (p *parser) parseOutputTag(tagNameStr string, prec int) error {
+	s := p.s
+	t, err := expectTagContents(s)
+	if err != nil {
+		return err
+	}
+	if err = validateOutputTagValue(t.Value); err != nil {
+		return fmt.Errorf("invalid output tag value at %s: %s", s.Context(), err)
+	}
+	filter := "N"
+	switch tagNameStr {
+	case "s", "v", "q", "z", "j", "sz", "qz", "jz":
+		filter = "E"
+	}
+	if strings.HasSuffix(tagNameStr, "=") {
+		tagNameStr = tagNameStr[:len(tagNameStr)-1]
+	}
+	if tagNameStr == "f" && prec >= 0 {
+		p.Printf("qw%s.N().FPrec(%s, %d)", mangleSuffix, t.Value, prec)
+	} else {
+		tagNameStr = strings.ToUpper(tagNameStr)
+		p.Printf("qw%s.%s().%s(%s)", mangleSuffix, filter, tagNameStr, t.Value)
+	}
+
+	return nil
+}
+
+func (p *parser) parseOutputFunc(tagNameStr string) error {
+	s := p.s
+	t, err := expectTagContents(s)
+	if err != nil {
+		return err
+	}
+	f, err := parseFuncCall(t.Value)
+	if err != nil {
+		return fmt.Errorf("error at %s: %s", s.Context(), err)
+	}
+	filter := "N"
+	tagNameStr = tagNameStr[1:]
+	if strings.HasSuffix(tagNameStr, "h") {
+		tagNameStr = tagNameStr[:len(tagNameStr)-1]
+		switch tagNameStr {
+		case "", "q", "j":
+			filter = "E"
+		}
+	}
+
+	if len(tagNameStr) > 0 || filter == "E" {
+		tagNameStr = strings.ToUpper(tagNameStr)
+		p.Printf("{")
+		p.Printf("qb%s := qt%s.AcquireByteBuffer()", mangleSuffix, mangleSuffix)
+		p.Printf("%s", f.CallWrite("qb"+mangleSuffix))
+		p.Printf("qw%s.%s().%sZ(qb%s.B)", mangleSuffix, filter, tagNameStr, mangleSuffix)
+		p.Printf("qt%s.ReleaseByteBuffer(qb%s)", mangleSuffix, mangleSuffix)
+		p.Printf("}")
+	} else {
+		p.Printf("%s", f.CallStream("qw"+mangleSuffix))
+	}
+
 	return nil
 }
 

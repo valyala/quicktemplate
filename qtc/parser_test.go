@@ -10,6 +10,44 @@ import (
 	"github.com/valyala/quicktemplate"
 )
 
+func TestParseOutputFunc(t *testing.T) {
+	// func without args
+	testParseSuccess(t, `{% func f() %}{%= f() %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%= x.y.f() %}{% endfunc %}`)
+
+	// func with args
+	testParseSuccess(t, `{% func f() %}{%= f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%= x.y.f(1, "foo", bar) %}{% endfunc %}`)
+
+	// html modifier (=h)
+	testParseSuccess(t, `{% func f() %}{%=h f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=h x.y.f(1, "foo", bar) %}{% endfunc %}`)
+
+	// urlencode modifier (=u)
+	testParseSuccess(t, `{% func f() %}{%=u f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=u x.y.f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=uh f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=uh x.y.f(1, "foo", bar) %}{% endfunc %}`)
+
+	// quoted json string modifier (=q)
+	testParseSuccess(t, `{% func f() %}{%=q f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=q x.y.f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=qh f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=qh x.y.f(1, "foo", bar) %}{% endfunc %}`)
+
+	// unquoted json string modifier (=j)
+	testParseSuccess(t, `{% func f() %}{%=j f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=j x.y.f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=jh f(1, "foo", bar) %}{% endfunc %}`)
+	testParseSuccess(t, `{% func f() %}{%=jh x.y.f(1, "foo", bar) %}{% endfunc %}`)
+
+	// unknown modifier
+	testParseFailure(t, `{% func f() %}{%=w f(1, "foo", bar) %}{% endfunc %}`)
+	testParseFailure(t, `{% func f() %}{%=ww x.y.f(1, "foo", bar) %}{% endfunc %}`)
+	testParseFailure(t, `{% func f() %}{%=wwh f(1, "foo", bar) %}{% endfunc %}`)
+	testParseFailure(t, `{% func f() %}{%=wh x.y.f(1, "foo", bar) %}{% endfunc %}`)
+}
+
 func TestParseCat(t *testing.T) {
 	// relative paths
 	testParseSuccess(t, `{% func a() %}{% cat "parser.go" %}{% endfunc %}`)
@@ -117,7 +155,7 @@ func TestParseSwitchCaseSuccess(t *testing.T) {
 			{% for i := 0; i < 10; i++ %}
 				foobar
 			{% endfor %}
-		{% case "qwe" %}
+		{% case "qwe", "sdfdf" %}
 			aaaa
 			{% return %}
 		{% case "www" %}

@@ -37,7 +37,16 @@ Now define an exported function template
 					{% continue %}
 					This should be {%s "ignored" %}.
 				{% endif %}
-				{%= printArgs(i, &aa) %}
+
+				no html encoding: {%= printArgs(i, &aa) %}
+				html encoding: {%=h printArgs(i, &aa) %}
+				url encoding: {%=u printArgs(i, &aa) %}
+				html-encoded url encoding: {%=uh printArgs(i, &aa) %}
+				quoted json string: {%=q printArgs(i, &aa) %}
+				html-encoded quoted json string: {%=qh printArgs(i, &aa) %}
+				unquoted json string: {%=j printArgs(i, &aa) %}
+				html-encoded unquoted json string: {%=jh printArgs(i, &aa) %}
+
 				Arbitrary Go code may be inserted here: {% code	str := strconv.Itoa(i+42) %}
 				str = {%s fmt.Sprintf("this html will be escaped <b>%s</b>", str) %}
 			{% endfor %}
@@ -62,7 +71,7 @@ Now define an exported function template
 {% endfunc %}
 
 {%plain%}
-Now define private printArgs, which is used in Foo via {%= %} tag
+Now define private printArgs, which is called in Foo via {%= %} tag
 {%endplain%}
 {% func printArgs(i int, a *FooArgs) %}
 	{% if i == 0 %}
