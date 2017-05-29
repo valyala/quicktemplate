@@ -1,18 +1,18 @@
 language: go
 
 go:
-  - 1.6
+  - 1.7
+  - 1.8
 
 before_install:
-  - go get -u github.com/mitchellh/gox
   - go get -u github.com/valyala/quicktemplate/qtc
   - go generate
 
 script:
   # build test for supported platforms
-  - gox -os="linux"
-  - gox -os="darwin"
-  - gox -os="freebsd"
+  - GOOS=linux go build
+  - GOOS=darwin go build
+  - GOOS=freebsd go build
 
   # run tests on a standard platform
   - go test -v ./...
