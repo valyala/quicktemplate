@@ -1,6 +1,10 @@
 This is a test template file.
 All the lines outside func and code are just comments.
 
+Optional package name must be at the top of template.
+By default package name is identical to the current folder name.
+{% package templates %}
+
 Optional imports must be at the top of template
 {% import (
 	"fmt"

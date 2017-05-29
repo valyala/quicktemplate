@@ -176,6 +176,8 @@ So `Hello` template function may be used inside `greetings.qtpl` while
 it is defined in `hello.qtpl`.
 Moreover, the folder may contain ordinary Go files, so its' contents may
 be used inside templates and vice versa.
+Package name inside template files may be overriden
+with `{% package packageName %}`.
 
 Now put the following code into `main.go`:
 
@@ -334,6 +336,13 @@ There are other useful tags supported by quicktemplate:
         Age int
     }
     %}
+    ```
+
+  * `{% package %}`:
+
+    ```qtpl
+    Override default package name with the custom name
+    {% package customPackageName %}
     ```
 
   * `{% import %}`:

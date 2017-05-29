@@ -13,14 +13,16 @@ import (
 )
 
 type parser struct {
-	s                 *scanner
-	w                 io.Writer
-	packageName       string
-	prefix            string
-	forDepth          int
-	switchDepth       int
-	skipOutputDepth   int
-	importsUseEmitted bool
+	s               *scanner
+	w               io.Writer
+	packageName     string
+	prefix          string
+	forDepth        int
+	switchDepth     int
+	skipOutputDepth int
+
+	importsUseEmitted  bool
+	packageNameEmitted bool
 }
 
 func parse(w io.Writer, r io.Reader, filePath, packageName string) error {
@@ -39,27 +41,30 @@ func (p *parser) parseTemplate() error {
 
 `,
 		filepath.Base(s.filePath))
-	p.Printf("package %s\n", p.packageName)
-	p.Printf(`import (
-	qtio%s "io"
-
-	qt%s "github.com/valyala/quicktemplate"
-)
-`, mangleSuffix, mangleSuffix)
 	for s.Next() {
 		t := s.Token()
 		switch t.ID {
 		case text:
 			p.emitComment(t.Value)
 		case tagName:
-			if string(t.Value) == "import" {
+			switch string(t.Value) {
+			case "package":
+				if p.packageNameEmitted {
+					return fmt.Errorf("package name must be at the top of the template. Found at %s", s.Context())
+				}
+				if err := p.parsePackageName(); err != nil {
+					return err
+				}
+			case "import":
+				p.emitPackageName()
 				if p.importsUseEmitted {
 					return fmt.Errorf("imports must be at the top of the template. Found at %s", s.Context())
 				}
 				if err := p.parseImport(); err != nil {
 					return err
 				}
-			} else {
+			default:
+				p.emitPackageName()
 				p.emitImportsUse()
 				switch string(t.Value) {
 				case "interface", "iface":
@@ -87,6 +92,13 @@ func (p *parser) parseTemplate() error {
 		return fmt.Errorf("cannot parse template: %s", err)
 	}
 	return nil
+}
+
+func (p *parser) emitPackageName() {
+	if !p.packageNameEmitted {
+		p.Printf("package %s\n", p.packageName)
+		p.packageNameEmitted = true
+	}
 }
 
 func (p *parser) emitComment(comment []byte) {
@@ -125,6 +137,12 @@ func (p *parser) emitImportsUse() {
 	if p.importsUseEmitted {
 		return
 	}
+	p.Printf(`import (
+	qtio%s "io"
+
+	qt%s "github.com/valyala/quicktemplate"
+)
+`, mangleSuffix, mangleSuffix)
 	p.Printf(`var (
 	_ = qtio%s.Copy
 	_ = qt%s.AcquireByteBuffer
@@ -617,6 +635,22 @@ func (p *parser) parseInterface() error {
 	return nil
 }
 
+func (p *parser) parsePackageName() error {
+	t, err := expectTagContents(p.s)
+	if err != nil {
+		return err
+	}
+	if len(t.Value) == 0 {
+		return fmt.Errorf("empty package name found at %s", p.s.Context())
+	}
+	if err = validatePackageName(t.Value); err != nil {
+		return fmt.Errorf("invalid package name found at %s: %s", p.s.Context(), err)
+	}
+	p.packageName = string(t.Value)
+	p.emitPackageName()
+	return nil
+}
+
 func (p *parser) parseImport() error {
 	t, err := expectTagContents(p.s)
 	if err != nil {
@@ -836,6 +870,13 @@ func validateFuncCode(code []byte) error {
 
 func validateTemplateCode(code []byte) error {
 	codeStr := fmt.Sprintf("package foo\nvar _ = a\n%s", code)
+	fset := gotoken.NewFileSet()
+	_, err := goparser.ParseFile(fset, "", codeStr, 0)
+	return err
+}
+
+func validatePackageName(code []byte) error {
+	codeStr := fmt.Sprintf("package %s", code)
 	fset := gotoken.NewFileSet()
 	_, err := goparser.ParseFile(fset, "", codeStr, 0)
 	return err

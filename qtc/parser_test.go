@@ -10,6 +10,36 @@ import (
 	"github.com/valyala/quicktemplate"
 )
 
+func TestParsePackageName(t *testing.T) {
+	// empty template
+	testParseSuccess(t, ``)
+
+	// No package name
+	testParseSuccess(t, `foobar`)
+
+	// explicit package name
+	testParseSuccess(t, `{% package foobar %}`)
+
+	// package name with imports
+	testParseSuccess(t, `Package: {%
+		package foobar
+	%}
+	import
+	{% import "aa/bb/cc" %}
+	yet another import
+	{% import (
+		"xxx.com/aaa"
+	) %}`)
+
+	// multiple package names
+	testParseFailure(t, `{% package foo %}{% package bar %}`)
+
+	// package name not at the top of the template
+	testParseFailure(t, `{% import "foo" %}{% package bar %}`)
+	testParseFailure(t, `{% func foo() %}{% endfunc %}{% package bar %}`)
+	testParseFailure(t, `{% func foo() %}{% package bar %}{% endfunc %}`)
+}
+
 func TestParseOutputFunc(t *testing.T) {
 	// func without args
 	testParseSuccess(t, `{% func f() %}{%= f() %}{% endfunc %}`)
