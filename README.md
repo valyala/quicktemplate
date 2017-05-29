@@ -265,11 +265,11 @@ There are other useful tags supported by quicktemplate:
 
   * `{% plain %}`
 
-  ```qtpl
-      {% plain %}
-          Tags will {% trap into %} the output {% unmodified %}.
-          Plain block may contain invalid and {% incomplete tags.
-      {% endplain %}
+    ```qtpl
+    {% plain %}
+        Tags will {% trap into %} the output {% unmodified %}.
+        Plain block may contain invalid and {% incomplete tags.
+    {% endplain %}
     ```
 
   * `{% collapsespace %}`
