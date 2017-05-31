@@ -31,6 +31,11 @@ func TestParsePackageName(t *testing.T) {
 		"xxx.com/aaa"
 	) %}`)
 
+	// invalid package name
+	testParseFailure(t, `{% package foo bar %}`)
+	testParseFailure(t, `{% package "foobar" %}`)
+	testParseFailure(t, `{% package x(foobar) %}`)
+
 	// multiple package names
 	testParseFailure(t, `{% package foo %}{% package bar %}`)
 
