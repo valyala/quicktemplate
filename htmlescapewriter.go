@@ -1,6 +1,7 @@
 package quicktemplate
 
 import (
+	"bytes"
 	"io"
 )
 
@@ -9,6 +10,17 @@ type htmlEscapeWriter struct {
 }
 
 func (w *htmlEscapeWriter) Write(b []byte) (int, error) {
+	if bytes.IndexByte(b, '<') < 0 &&
+		bytes.IndexByte(b, '>') < 0 &&
+		bytes.IndexByte(b, '"') < 0 &&
+		bytes.IndexByte(b, '\'') < 0 &&
+		bytes.IndexByte(b, '&') < 0 {
+
+		// fast path - nothing to escape
+		return w.w.Write(b)
+	}
+
+	// slow path
 	write := w.w.Write
 	j := 0
 	for i, c := range b {
