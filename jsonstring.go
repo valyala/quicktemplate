@@ -2,9 +2,28 @@ package quicktemplate
 
 import (
 	"io"
+	"strings"
 )
 
 func writeJSONString(w io.Writer, s string) {
+	if len(s) > 24 &&
+		strings.IndexByte(s, '"') < 0 &&
+		strings.IndexByte(s, '\\') < 0 &&
+		strings.IndexByte(s, '\n') < 0 &&
+		strings.IndexByte(s, '\r') < 0 &&
+		strings.IndexByte(s, '\t') < 0 &&
+		strings.IndexByte(s, '\f') < 0 &&
+		strings.IndexByte(s, '\b') < 0 &&
+		strings.IndexByte(s, '<') < 0 &&
+		strings.IndexByte(s, '\'') < 0 &&
+		strings.IndexByte(s, 0) < 0 {
+
+		// fast path - nothing to escape
+		w.Write(unsafeStrToBytes(s))
+		return
+	}
+
+	// slow path
 	write := w.Write
 	b := unsafeStrToBytes(s)
 	j := 0
