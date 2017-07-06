@@ -610,6 +610,11 @@ BenchmarkMarshalXMLQuickTemplate1000-4    	   30000	     53000 ns/op	      32 B/
 * *Is there a syntax highlighting for qtpl files?*
 
   Yes - see [this issue](https://github.com/valyala/quicktemplate/issues/19) for details.
+  If you are using JetBrains products (syntax highlighting and autocomplete):
+    * cd [JetBrains settings directory](https://intellij-support.jetbrains.com/hc/en-us/articles/206544519-Directories-used-by-the-IDE-to-store-settings-caches-plugins-and-logs)
+    * mkdir -p filetypes && cd filetypes
+    * curl https://raw.githubusercontent.com/valyala/quicktemplate/master/QuickTemplate.xml >> QuickTemplate.xml
+    * Restart your IDE
 
 * *I didn't find an answer for my question here.*
 
