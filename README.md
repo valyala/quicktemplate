@@ -4,27 +4,26 @@
 
 # quicktemplate
 
-Fast, powerful, yet easy to use template engine for Go.
-Inspired by [mako templates](http://www.makotemplates.org/) philosophy.
-
+A fast, powerful, yet easy to use template engine for Go.
+Inspired by the [Mako templates](http://www.makotemplates.org/) philosophy.
 
 # Features
 
   * [Extremely fast](#performance-comparison-with-htmltemplate).
     Templates are converted into Go code and then compiled.
-  * Quicktemplate syntax is very close to Go - there is no need in learning
+  * Quicktemplate syntax is very close to Go - there is no need to learn
     yet another template language before starting to use quicktemplate.
-  * Almost all the bugs are caught during template compilation, so production
+  * Almost all bugs are caught during template compilation, so production
     suffers less from template-related bugs.
   * Easy to use. See [quickstart](#quick-start) and [examples](https://github.com/valyala/quicktemplate/tree/master/examples)
     for details.
   * Powerful. Arbitrary Go code may be embedded into and mixed with templates.
-    Be careful with this power - do not query db and/or external resources from
-    templates unless you miss php way in Go :) This power is mostly for
+    Be careful with this power - do not query the database and/or external resources from
+    templates unless you miss the PHP way in Go :) This power is mostly for
     arbitrary data transformations.
   * Easy to use template inheritance powered by [Go interfaces](https://golang.org/doc/effective_go.html#interfaces).
     See [this example](https://github.com/valyala/quicktemplate/tree/master/examples/basicserver) for details.
-  * Templates are compiled into a single binary, so there is no need in copying
+  * Templates are compiled into a single binary, so there is no need to copy
     template files to the server.
 
 # Drawbacks
@@ -32,7 +31,7 @@ Inspired by [mako templates](http://www.makotemplates.org/) philosophy.
   * Templates cannot be updated on the fly on the server, since they
     are compiled into a single binary.
     Take a look at [fasttemplate](https://github.com/valyala/fasttemplate)
-    if you need fast template engine for simple dynamically updated templates.
+    if you need a fast template engine for simple dynamically updated templates.
 
 # Performance comparison with html/template
 
@@ -54,11 +53,11 @@ BenchmarkHTMLTemplate10-4                 	  100000	     12442 ns/op	    3521 B/
 BenchmarkHTMLTemplate100-4                	   10000	    123392 ns/op	   34498 B/op	    1152 allocs/op
 ```
 
-[goTemplateBenchmark](https://github.com/SlinSo/goTemplateBenchmark) compares QuickTemplate with numerous go templating packages. QuickTemplate performs favorably.
+[goTemplateBenchmark](https://github.com/SlinSo/goTemplateBenchmark) compares QuickTemplate with numerous Go templating packages. QuickTemplate performs favorably.
 
 # Security
 
-  * All the template placeholders are html-escaped by default.
+  * All template placeholders are HTML-escaped by default.
   * Template placeholders for JSON strings prevent from `</script>`-based
     XSS attacks:
 
@@ -76,7 +75,7 @@ See [examples](https://github.com/valyala/quicktemplate/tree/master/examples).
 
 # Quick start
 
-First of all, install `quicktemplate` package
+First of all, install the `quicktemplate` package
 and [quicktemplate compiler](https://github.com/valyala/quicktemplate/tree/master/qtc) (`qtc`):
 
 ```
@@ -87,7 +86,7 @@ go get -u github.com/valyala/quicktemplate/qtc
 Let's start with a minimal template example:
 
 ```qtpl
-All the text outside function templates is treated as comments,
+All text outside function templates is treated as comments,
 i.e. it is just ignored by quicktemplate compiler (`qtc`). It is for humans.
 
 Hello is a simple template function.
@@ -96,10 +95,10 @@ Hello is a simple template function.
 {% endfunc %}
 ```
 
-Save this file into `templates` folder under the name `hello.qtpl`
+Save this file into a `templates` folder under the name `hello.qtpl`
 and run `qtc` inside this folder.
 
-If all went ok, `hello.qtpl.go` file must appear in the `templates` folder.
+If everything went OK, `hello.qtpl.go` file should appear in the `templates` folder.
 This file contains Go code for `hello.qtpl`. Let's use it!
 
 Create a file main.go outside `templates` folder and put the following
@@ -120,7 +119,7 @@ func main() {
 }
 ```
 
-Then issue `go run`. If all went ok, you'll see something like this:
+Then issue `go run`. If everything went OK, you'll see something like this:
 
 ```
 
@@ -131,8 +130,8 @@ Then issue `go run`. If all went ok, you'll see something like this:
 
 ```
 
-Let's create more complex template, which calls other template functions,
-contains loops, conditions, breaks, continue and returns.
+Let's create more a complex template which calls other template functions,
+contains loops, conditions, breaks, continues and returns.
 Put the following template into `templates/greetings.qtpl`:
 
 ```qtpl
@@ -152,7 +151,7 @@ It also greets John differently comparing to others.
 		{% elseif name == "John" %}
 			{%= sayHi("Mr. " + name) %}
 			{% continue %}
-		{% else%}
+		{% else %}
 			{%= Hello(name) %}
 		{% endif %}
 	{% endfor %}
@@ -163,7 +162,7 @@ sayHi is unexported, since it starts with lowercase letter.
 	Hi, {%s name %}
 {% endfunc %}
 
-Note that every template file may contain arbitrary number
+Note that every template file may contain an arbitrary number
 of template functions. For instance, this file contains Greetings and sayHi
 functions.
 ```
@@ -174,9 +173,9 @@ form a single `templates` Go package. Template functions and other template
 stuff is shared between template files located in the same folder.
 So `Hello` template function may be used inside `greetings.qtpl` while
 it is defined in `hello.qtpl`.
-Moreover, the folder may contain ordinary Go files, so its' contents may
+Moreover, the folder may contain ordinary Go files, so its contents may
 be used inside templates and vice versa.
-Package name inside template files may be overriden
+The package name inside template files may be overriden
 with `{% package packageName %}`.
 
 Now put the following code into `main.go`:
@@ -205,7 +204,7 @@ func main() {
 
 Careful readers may notice different output tags were used in these
 templates: `{%s name %}` and `{%= Hello(name) %}`. What's the difference?
-The `{%s x %}` is used for printing html-safe strings, while `{%= F() %}`
+The `{%s x %}` is used for printing HTML-safe strings, while `{%= F() %}`
 is used for embedding template function calls. Quicktemplate supports also
 other output tags:
 
@@ -214,20 +213,20 @@ other output tags:
     Floating point precision may be set via `{%f.precision float %}`.
     For example, `{%f.2 1.2345 %}` outputs `1.23`.
   * `{%z bytes %}` for byte slices.
-  * `{%q str %}` and `{%qz bytes %}` for json-compatible quoted strings.
-  * `{%j str %}` and `{%jz bytes %}` for embedding str into json string. Unlike `{%q str %}`
+  * `{%q str %}` and `{%qz bytes %}` for JSON-compatible quoted strings.
+  * `{%j str %}` and `{%jz bytes %}` for embedding str into a JSON string. Unlike `{%q str %}`,
     it doesn't quote the string.
   * `{%u str %}` and `{%uz bytes %}` for [URL encoding](https://en.wikipedia.org/wiki/Percent-encoding)
     the given str.
   * `{%v anything %}` is equivalent to `%v` in [printf-like functions](https://golang.org/pkg/fmt/).
 
-All the output tags except of `{%= F() %}` produce html-safe output, i.e. they
-escape `<` to `&lt;`, `>` to `&gt;`, etc. If you don't want html-safe output,
+All the output tags except `{%= F() %}` produce HTML-safe output, i.e. they
+escape `<` to `&lt;`, `>` to `&gt;`, etc. If you don't want HTML-safe output,
 then just put `=` after the tag. For example: `{%s= "<h1>This h1 won't be escaped</h1>" %}`.
 
 As you may notice `{%= F() %}` and `{%s= F() %}` produce the same output for `{% func F() %}`.
-But the first one is optimized for speed - it avoids memory allocations and copy.
-So stick to it when embedding template function calls.
+But the first one is optimized for speed - it avoids memory allocations and copies.
+It is therefore recommended to stick to it when embedding template function calls.
 
 Additionally, the following extensions are supported for `{%= F() %}`:
 
@@ -239,8 +238,8 @@ Additionally, the following extensions are supported for `{%= F() %}`:
   * `{%=qh F() %}` produces html-safe quoted json string.
   * `{%=jh F() %}` produces html-safe json string without quotes.
 
-All the output tags except of `{%= F() %}` family may contain arbitrary valid
-Go expression instead of just identifier. For example:
+All output tags except `{%= F() %}` family may contain arbitrary valid
+Go expressions instead of just an identifier. For example:
 
 ```qtpl
 Import fmt for fmt.Sprintf()
@@ -285,7 +284,7 @@ There are other useful tags supported by quicktemplate:
     {% endcollapsespace %}
     ```
 
-    Is converted into
+    Is converted into:
 
     ```
     <div> <div>space between lines</div> and tags <div>is collapsed into a single space unless
@@ -304,7 +303,7 @@ There are other useful tags supported by quicktemplate:
     {% endstripspace %}
     ```
 
-    Is converted into
+    Is converted into:
 
     ```
     <div><div>space between lines</div>and tags<div>is removed unless
@@ -428,7 +427,6 @@ There are other useful tags supported by quicktemplate:
     See [basicserver example](https://github.com/valyala/quicktemplate/tree/master/examples/basicserver)
     for more details.
 
-
 # Performance optimization tips
 
   * Prefer calling `WriteFoo` instead of `Foo` when generating template output
@@ -445,7 +443,7 @@ There are other useful tags supported by quicktemplate:
     for speed.
 
   * Prefer using specific output tags instead of generic output tag
-    `{%v %}`. For instance, use `{%s str %}` instead of `{%v str %}`, since
+    `{%v %}`. For example, use `{%s str %}` instead of `{%v str %}`, since
     specific output tags are optimized for speed.
 
   * Prefer creating custom function templates instead of composing complex
@@ -487,18 +485,17 @@ There are other useful tags supported by quicktemplate:
     [syscalls](https://en.wikipedia.org/wiki/System_call),
     which may be quite expensive.
 
-    Note: There is no need in wrapping [fasthttp.RequestCtx](https://godoc.org/github.com/valyala/fasthttp#RequestCtx)
+    Note: There is no need to wrap [fasthttp.RequestCtx](https://godoc.org/github.com/valyala/fasthttp#RequestCtx)
     into [bufio.Writer](https://golang.org/pkg/bufio/#Writer), since it is already buffered.
 
   * [Profile](http://blog.golang.org/profiling-go-programs) your programs
-    for memory allocations and fix top functions from
-    `go tool pprof --alloc_objects` output.
-
+    for memory allocations and fix the most demanding functions based on
+    the output of `go tool pprof --alloc_objects`.
 
 # Use cases
 
-While the main quicktemplate purpose is generating html, it may be used
-for generating other data too. For example, JSON and XML marshaling may
+While the main quicktemplate purpose is generating HTML, it may be used
+for generating other data too. For example, JSON and XML marshalling may
 be easily implemented with quicktemplate:
 
 ```qtpl
@@ -534,7 +531,7 @@ type MarshalData struct {
 {% endfunc %}
 {% endstripspace %}
 
-// XML marshaling
+// XML marshalling
 {% stripspace %}
 {% func (d *MarshalData) XML() %}
 <MarshalData>
@@ -553,10 +550,10 @@ type MarshalData struct {
 {% endstripspace %}
 ```
 
-Usually marshaling built with quicktemplate works faster than the marshaling
+Usually, marshalling built with quicktemplate works faster than the marshalling
 implemented via standard [encoding/json](https://golang.org/pkg/encoding/json/)
 and [encoding/xml](https://golang.org/pkg/encoding/xml/).
-The corresponding benchmark results:
+See the corresponding benchmark results:
 
 ```
 go test -bench=Marshal -benchmem github.com/valyala/quicktemplate/tests
@@ -580,7 +577,7 @@ BenchmarkMarshalXMLQuickTemplate1000-4    	   30000	     53000 ns/op	      32 B/
 
 # FAQ
 
-  * *Why quicktemplate syntax is incompatible with [html/template](https://golang.org/pkg/html/template/)?*
+  * *Why is the quicktemplate syntax incompatible with [html/template](https://golang.org/pkg/html/template/)?*
 
     Because `html/template` syntax isn't expressive enough for `quicktemplate`.
 
@@ -614,6 +611,6 @@ BenchmarkMarshalXMLQuickTemplate1000-4    	   30000	     53000 ns/op	      32 B/
 
   Yes - see [this issue](https://github.com/valyala/quicktemplate/issues/19) for details.
 
-* *I didn't find an answer for my question here*
+* *I didn't find an answer for my question here.*
 
   Try exploring [these questions](https://github.com/valyala/quicktemplate/issues?q=label%3Aquestion).
