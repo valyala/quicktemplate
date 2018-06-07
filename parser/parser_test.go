@@ -1,10 +1,12 @@
-package main
+package parser
 
 import (
 	"bytes"
+	"go/build"
 	"go/format"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/valyala/quicktemplate"
@@ -84,20 +86,22 @@ func TestParseOutputFunc(t *testing.T) {
 }
 
 func TestParseCat(t *testing.T) {
+	dir := filepath.Join(build.Default.GOPATH, "src/github.com/valyala/quicktemplate/parser")
+
 	// relative paths
-	testParseSuccess(t, `{% func a() %}{% cat "parser.go" %}{% endfunc %}`)
-	testParseSuccess(t, `{% func a() %}{% cat "./parser.go" %}{% endfunc %}`)
-	testParseSuccess(t, `{% func a() %}{% cat "../qtc/parser.go" %}{% endfunc %}`)
+	testParseSuccessWithDir(t, `{% func a() %}{% cat "parser.go" %}{% endfunc %}`, dir)
+	testParseSuccessWithDir(t, `{% func a() %}{% cat "./parser.go" %}{% endfunc %}`, dir)
+	testParseSuccessWithDir(t, `{% func a() %}{% cat "../parser/parser.go" %}{% endfunc %}`, dir)
 
 	// multi-cat
-	testParseSuccess(t, `{% func a() %}{% cat "parser.go" %}{% cat "./parser.go" %}{% endfunc %}`)
+	testParseSuccessWithDir(t, `{% func a() %}{% cat "parser.go" %}{% cat "./parser.go" %}{% endfunc %}`, dir)
 
 	// non-existing file
-	testParseFailure(t, `{% func a() %}{% cat "non-existing-file.go" %}{% endfunc %}`)
+	testParseFailureWithDir(t, `{% func a() %}{% cat "non-existing-file.go" %}{% endfunc %}`, dir)
 
 	// non-const string
-	testParseFailure(t, `{% func a() %}{% cat "foobar"+".baz" %}{% endfunc %}`)
-	testParseFailure(t, `{% func a() %}{% cat foobar %}{% endfunc %}`)
+	testParseFailureWithDir(t, `{% func a() %}{% cat "foobar"+".baz" %}{% endfunc %}`, dir)
+	testParseFailureWithDir(t, `{% func a() %}{% cat foobar %}{% endfunc %}`, dir)
 }
 
 func TestParseUnexpectedValueAfterTag(t *testing.T) {
@@ -546,37 +550,44 @@ else
 	testParseSuccess(t, "{%func (s *S) Foo(bar, baz string) %}{%endfunc%}")
 }
 
-func testParseFailure(t *testing.T, str string) {
+func testParseFailureWithDir(t *testing.T, str, dir string) {
 	r := bytes.NewBufferString(str)
 	w := &bytes.Buffer{}
-	if err := parse(w, r, "./foobar.tpl", "memory"); err == nil {
+	if err := Parse(w, r, filepath.Join(dir, "qtc-test.qtpl"), "memory"); err == nil {
 		t.Fatalf("expecting error when parsing %q", str)
 	}
 }
 
-func testParseSuccess(t *testing.T, str string) {
+func testParseSuccessWithDir(t *testing.T, str, dir string) {
 	r := bytes.NewBufferString(str)
 	w := &bytes.Buffer{}
-	if err := parse(w, r, "./foobar.tpl", "memory"); err != nil {
+	if err := Parse(w, r, filepath.Join(dir, "qtc-test.qtpl"), "memory"); err != nil {
 		t.Fatalf("unexpected error when parsing %q: %s", str, err)
 	}
 }
 
+func testParseFailure(t *testing.T, str string) {
+	testParseFailureWithDir(t, str, os.TempDir())
+}
+
+func testParseSuccess(t *testing.T, str string) {
+	testParseSuccessWithDir(t, str, os.TempDir())
+}
+
 func TestParseFile(t *testing.T) {
-	filename := "testdata/test.qtpl"
+	dir := filepath.Join(build.Default.GOPATH, "src/github.com/valyala/quicktemplate/testdata/qtc")
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	filename := filepath.Join(dir, "test.qtpl")
 	f, err := os.Open(filename)
 	if err != nil {
 		t.Fatalf("cannot open file %q: %s", filename, err)
 	}
 	defer f.Close()
 
-	packageName, err := getPackageName(filename)
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
-	}
-
 	w := quicktemplate.AcquireByteBuffer()
-	if err := parse(w, f, filename, packageName); err != nil {
+	if err := Parse(w, f, "test.qtpl", "qtc"); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	code, err := format.Source(w.B)
@@ -585,14 +596,16 @@ func TestParseFile(t *testing.T) {
 	}
 	quicktemplate.ReleaseByteBuffer(w)
 
-	expectedFilename := filename + ".compiled"
+	expectedFilename := filename + ".expected"
 	expectedCode, err := ioutil.ReadFile(expectedFilename)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
 	if !bytes.Equal(code, expectedCode) {
-		t.Fatalf("unexpected code: %q\nExpecting %q", code, expectedCode)
+		if err := ioutil.WriteFile(filename+".generated", code, 0644); err != nil {
+			t.Fatal(err)
+		}
+		t.Fatalf("unexpected code:\n%q\nexpected:\n%q", code, expectedCode)
 	}
-
 }

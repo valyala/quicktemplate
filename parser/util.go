@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"bytes"
@@ -77,15 +77,6 @@ func isSpace(c byte) bool {
 
 func isUpper(c byte) bool {
 	return unicode.IsUpper(rune(c))
-}
-
-func getPackageName(filename string) (string, error) {
-	filenameAbs, err := filepath.Abs(filename)
-	if err != nil {
-		return "", err
-	}
-	dir, _ := filepath.Split(filenameAbs)
-	return filepath.Base(dir), nil
 }
 
 func readFile(cwd, filename string) ([]byte, error) {

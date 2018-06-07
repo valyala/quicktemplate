@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"bytes"
@@ -25,11 +25,14 @@ type parser struct {
 	packageNameEmitted bool
 }
 
-func parse(w io.Writer, r io.Reader, filePath, packageName string) error {
+// Parse parses the contents of the supplied reader, writing generated code to
+// the supplied writer. Uses filename as the source file for line comments, and
+// pkg as the Go package name.
+func Parse(w io.Writer, r io.Reader, filename, pkg string) error {
 	p := &parser{
-		s:           newScanner(r, filePath),
+		s:           newScanner(r, filename),
 		w:           w,
-		packageName: packageName,
+		packageName: pkg,
 	}
 	return p.parseTemplate()
 }

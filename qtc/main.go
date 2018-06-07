@@ -1,3 +1,6 @@
+// Command qtc is a compiler for quicktemplate files.
+//
+// See https://github.com/valyala/quicktemplate/qtc for details.
 package main
 
 import (
@@ -9,6 +12,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/valyala/quicktemplate/parser"
 )
 
 var (
@@ -122,7 +127,7 @@ func compileFile(infile string) {
 	if err != nil {
 		logger.Fatalf("cannot determine package name for %q: %s", infile, err)
 	}
-	if err = parse(outf, inf, infile, packageName); err != nil {
+	if err = parser.Parse(outf, inf, infile, packageName); err != nil {
 		logger.Fatalf("error when parsing file %q: %s", infile, err)
 	}
 	if err = outf.Close(); err != nil {
@@ -149,4 +154,13 @@ func compileFile(infile string) {
 	}
 
 	filesCompiled++
+}
+
+func getPackageName(filename string) (string, error) {
+	filenameAbs, err := filepath.Abs(filename)
+	if err != nil {
+		return "", err
+	}
+	dir, _ := filepath.Split(filenameAbs)
+	return filepath.Base(dir), nil
 }
