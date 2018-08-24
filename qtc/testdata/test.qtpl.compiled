@@ -242,16 +242,16 @@ func StreamFoo(qw422016 *qt422016.Writer, a []FooArgs) {
 	qw422016.N().S(`
 	`)
 	//line testdata/test.qtpl:66
-	qw422016.N().S(`Leading and trailing space between lines and tags is collapsed inside collapsespace unless `)
+	qw422016.N().S(` Leading and trailing space between lines and tags is collapsed inside collapsespace unless `)
 	//line testdata/test.qtpl:68
 	qw422016.N().S(` `)
 	//line testdata/test.qtpl:68
-	qw422016.N().S(`or `)
+	qw422016.N().S(` or `)
 	//line testdata/test.qtpl:68
 	qw422016.N().S(`
 `)
 	//line testdata/test.qtpl:68
-	qw422016.N().S(`is used `)
+	qw422016.N().S(` is used `)
 	//line testdata/test.qtpl:69
 	qw422016.N().S(`
 	`)
@@ -748,10 +748,11 @@ type Homepage struct{}
 
 //line testdata/test.qtpl:139
 func (h *Homepage) StreamHead(qw422016 *qt422016.Writer) {
+	//line testdata/test.qtpl:139
+	qw422016.N().S(`<title>Homepage</title>`)
 //line testdata/test.qtpl:139
-qw422016.N().S(`<title>Homepage</title>`) }
+}
 
-//line testdata/test.qtpl:139
 //line testdata/test.qtpl:139
 func (h *Homepage) WriteHead(qq422016 qtio422016.Writer) {
 	//line testdata/test.qtpl:139

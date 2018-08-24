@@ -277,7 +277,7 @@ There are other useful tags supported by quicktemplate:
     {% collapsespace %}
         <div>
             <div>space between lines</div>
-               and {%s " tags" %}
+               and {%s "tags" %}
              <div>is collapsed into a single space
              unless{% newline %}or{% space %}is used</div>
         </div>
