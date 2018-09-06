@@ -51,8 +51,8 @@
 			plain
 		
 
-	Collapse space  between 
-lines and tags s = fooBar Baz 
+	 Collapse space   between 
+ lines and tags      s = foo    Bar    Baz  
 
 	This is a template for integration test.
 It should contains all the quicktemplate stuff.
