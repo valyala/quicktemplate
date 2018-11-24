@@ -9,7 +9,7 @@ import (
 // Recycle byte buffers via AcquireByteBuffer and ReleaseByteBuffer
 // in order to reduce memory allocations.
 //
-// ByteBuffer is deprecated. Use github.com/valyala/bytebufferpool instead.
+// Deprecated: use github.com/valyala/bytebufferpool instead.
 type ByteBuffer bytebufferpool.ByteBuffer
 
 // Write implements io.Writer.
