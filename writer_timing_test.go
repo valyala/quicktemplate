@@ -137,15 +137,31 @@ func benchmarkQWriterU(b *testing.B, size int) {
 	})
 }
 
-func BenchmarkQWriterF(b *testing.B) {
-	f := 123.456
+func BenchmarkQWriterFfloat(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
+		f := 123.456
 		var w QWriter
 		bb := AcquireByteBuffer()
 		w.w = bb
 		for pb.Next() {
 			w.F(f)
 			bb.Reset()
+			f += 1
+		}
+		ReleaseByteBuffer(bb)
+	})
+}
+
+func BenchmarkQWriterFint(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		f := 123.0
+		var w QWriter
+		bb := AcquireByteBuffer()
+		w.w = bb
+		for pb.Next() {
+			w.F(f)
+			bb.Reset()
+			f += 1
 		}
 		ReleaseByteBuffer(bb)
 	})
