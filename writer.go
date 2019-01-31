@@ -109,13 +109,21 @@ func (w *QWriter) D(n int) {
 	if ok {
 		bb.B = strconv.AppendInt(bb.B, int64(n), 10)
 	} else {
-		w.b = strconv.AppendInt(w.b[:0], int64(n), 10)
+		w.b = strconv.AppendInt(w.b, int64(n), 10)
 		w.Write(w.b)
 	}
 }
 
 // F writes f to w.
 func (w *QWriter) F(f float64) {
+	n := int(f)
+	if float64(n) == f {
+		// Fast path - just int.
+		w.D(n)
+		return
+	}
+
+	// Slow path.
 	w.FPrec(f, -1)
 }
 
