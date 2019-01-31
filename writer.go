@@ -109,7 +109,7 @@ func (w *QWriter) D(n int) {
 	if ok {
 		bb.B = strconv.AppendInt(bb.B, int64(n), 10)
 	} else {
-		w.b = strconv.AppendInt(w.b, int64(n), 10)
+		w.b = strconv.AppendInt(w.b[:0], int64(n), 10)
 		w.Write(w.b)
 	}
 }
