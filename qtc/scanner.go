@@ -88,10 +88,7 @@ func newScannerWithTagConf(r io.Reader, filePath string, openTag string, closeTa
 }
 
 func newScanner(r io.Reader, filePath string) *Scanner {
-	return &Scanner{
-		r:        bufio.NewReader(r),
-		filePath: filePath,
-	}
+	return newScannerWithTagConf(r, filePath, "{%", "%}")
 }
 
 func (s *Scanner) Rewind() {
