@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"flag"
+	"fmt"
 	"go/format"
 	"io/ioutil"
 	"log"
@@ -27,27 +29,58 @@ var logger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
 
 var filesCompiled int
 
+type tt struct {
+	ID    int
+	Value string
+}
+
+func testIt() {
+	str := "header {%stripspace %} toto et tata {%endstripspace %} footer"
+	r := bytes.NewBufferString(str)
+	s := NewScanWithTagConf(r, "memory", "{%", "%}")
+	var tokens []tt
+	i := 0
+	for s.Next() {
+		tok := s.Token()
+		id := tok.ID
+		val := string(tok.Value)
+		fmt.Printf("%d - %s\n", id, val)
+		tokens = append(tokens, tt{
+			ID:    s.Token().ID,
+			Value: string(s.Token().Value),
+		})
+		fmt.Printf("token[%d] : %d - %s\n", i, s.Token().ID, string(s.Token().Value))
+		i++
+	}
+	count := len(tokens)
+
+	fmt.Printf("found %d tokens when scanning %q.  \n", count, str)
+}
+
 func main() {
-	flag.Parse()
 
-	if len(*file) > 0 {
-		compileSingleFile(*file)
-		return
-	}
+	testIt()
 
-	if len(*ext) == 0 {
-		logger.Fatalf("ext cannot be empty")
-	}
-	if len(*dir) == 0 {
-		*dir = "."
-	}
-	if (*ext)[0] != '.' {
-		*ext = "." + *ext
-	}
+	// flag.Parse()
 
-	logger.Printf("Compiling *%s template files in directory %q", *ext, *dir)
-	compileDir(*dir)
-	logger.Printf("Total files compiled: %d", filesCompiled)
+	// if len(*file) > 0 {
+	// 	compileSingleFile(*file)
+	// 	return
+	// }
+
+	// if len(*ext) == 0 {
+	// 	logger.Fatalf("ext cannot be empty")
+	// }
+	// if len(*dir) == 0 {
+	// 	*dir = "."
+	// }
+	// if (*ext)[0] != '.' {
+	// 	*ext = "." + *ext
+	// }
+
+	// logger.Printf("Compiling *%s template files in directory %q", *ext, *dir)
+	// compileDir(*dir)
+	// logger.Printf("Total files compiled: %d", filesCompiled)
 }
 
 func compileSingleFile(filename string) {

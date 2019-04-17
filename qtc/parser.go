@@ -13,7 +13,7 @@ import (
 )
 
 type parser struct {
-	s               *scanner
+	s               *Scanner
 	w               io.Writer
 	packageName     string
 	prefix          string
@@ -805,7 +805,7 @@ func (p *parser) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(w, "\n")
 }
 
-func skipTagContents(s *scanner) error {
+func skipTagContents(s *Scanner) error {
 	tagName := string(s.Token().Value)
 	t, err := expectTagContents(s)
 	if err != nil {
@@ -817,11 +817,11 @@ func skipTagContents(s *scanner) error {
 	return err
 }
 
-func expectTagContents(s *scanner) (*token, error) {
+func expectTagContents(s *Scanner) (*token, error) {
 	return expectToken(s, tagContents)
 }
 
-func expectToken(s *scanner, id int) (*token, error) {
+func expectToken(s *Scanner, id int) (*token, error) {
 	if !s.Next() {
 		return nil, fmt.Errorf("cannot find token %s: %v", tokenIDToStr(id), s.LastError())
 	}
