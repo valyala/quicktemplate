@@ -257,6 +257,14 @@ func TestConfigurationScannerSuccess(t *testing.T) {
 		{ID: tagContents, Value: "aa (123)"},
 		{ID: text, Value: "321"},
 	})
+	testConfigurationScannerSuccess(t, "  aa\n\t [%stripspace%] \t\n  f\too \n   b  ar \n\r\t [%  bar baz  asd %]\n\nbaz \n\t \taaa  \n[%endstripspace%] bb  ", "[%", "%]", []tt{
+		{ID: text, Value: "  aa\n\t "},
+		{ID: text, Value: "f\toob  ar"},
+		{ID: tagName, Value: "bar"},
+		{ID: tagContents, Value: "baz  asd"},
+		{ID: text, Value: "bazaaa"},
+		{ID: text, Value: " bb  "},
+	})
 }
 
 func testConfigurationScannerSuccess(t *testing.T, str string, startTag string, endTag string, expectedTokens []tt) {

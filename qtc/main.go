@@ -29,23 +29,51 @@ var logger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
 
 var filesCompiled int
 
-type tt struct {
+type myToken struct {
 	ID    int
 	Value string
 }
 
-func testIt() {
+func testItBrace() {
 	str := "header {%stripspace %} toto et tata {%endstripspace %} footer"
 	r := bytes.NewBufferString(str)
-	s := NewScanWithTagConf(r, "memory", "{%", "%}")
-	var tokens []tt
+	s := newScanner(r, "memory")
+	var tokens []myToken
 	i := 0
 	for s.Next() {
 		tok := s.Token()
 		id := tok.ID
 		val := string(tok.Value)
 		fmt.Printf("%d - %s\n", id, val)
-		tokens = append(tokens, tt{
+		tokens = append(tokens, myToken{
+			ID:    s.Token().ID,
+			Value: string(s.Token().Value),
+		})
+		fmt.Printf("token[%d] : %d - %s\n", i, s.Token().ID, string(s.Token().Value))
+		i++
+	}
+	count := len(tokens)
+
+	fmt.Printf("found %d tokens when scanning %q.  \n", count, str)
+}
+
+func testItBracket() {
+	str := `header [%stripspace %] 
+	toto 
+	{% moustache %}   
+	et   
+	tata    
+	[%endstripspace %] footer`
+	r := bytes.NewBufferString(str)
+	s := newScannerWithTagConf(r, "memory", "[%", "%]")
+	var tokens []myToken
+	i := 0
+	for s.Next() {
+		tok := s.Token()
+		id := tok.ID
+		val := string(tok.Value)
+		fmt.Printf("%d - %s\n", id, val)
+		tokens = append(tokens, myToken{
 			ID:    s.Token().ID,
 			Value: string(s.Token().Value),
 		})
@@ -59,7 +87,8 @@ func testIt() {
 
 func main() {
 
-	testIt()
+	//testItBrace()
+	testItBracket()
 
 	// flag.Parse()
 
