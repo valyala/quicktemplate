@@ -264,7 +264,7 @@ func (s *scanner) readText() bool {
 			ok = true
 			break
 		}
-		if s.c == '%' {
+		if s.c == s.openingTag[1] {
 			s.nextTokenID = tagName
 			ok = true
 			break

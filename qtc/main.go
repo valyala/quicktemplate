@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"flag"
-	"fmt"
 	"go/format"
 	"io/ioutil"
 	"log"
@@ -22,94 +20,36 @@ var (
 	file = flag.String("file", "", "Path to template file to compile.\n"+
 		"Flags -dir and -ext are ignored if file is set.\n"+
 		"The compiled file will be placed near the original file with .go extension added.")
-	ext = flag.String("ext", "qtpl", "Only files with this extension are compiled")
+	ext      = flag.String("ext", "qtpl", "Only files with this extension are compiled")
+	startTag = flag.String("sTag", "{%", "tag starting delimiter (2 chars)")
+	endTag   = flag.String("eTag", "{%", "tag ending delimiter (2 chars)")
 )
 
 var logger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
 
 var filesCompiled int
 
-type myToken struct {
-	ID    int
-	Value string
-}
-
-func testItBrace() {
-	str := "header {%stripspace %} toto et tata {%endstripspace %} footer"
-	r := bytes.NewBufferString(str)
-	s := newScanner(r, "memory")
-	var tokens []myToken
-	i := 0
-	for s.Next() {
-		tok := s.Token()
-		id := tok.ID
-		val := string(tok.Value)
-		fmt.Printf("%d - %s\n", id, val)
-		tokens = append(tokens, myToken{
-			ID:    s.Token().ID,
-			Value: string(s.Token().Value),
-		})
-		fmt.Printf("token[%d] : %d - %s\n", i, s.Token().ID, string(s.Token().Value))
-		i++
-	}
-	count := len(tokens)
-
-	fmt.Printf("found %d tokens when scanning %q.  \n", count, str)
-}
-
-func testItBracket() {
-	str := `header [%stripspace %] 
-	toto 
-	{% moustache %}   
-	et   
-	tata    
-	[%endstripspace %] footer`
-	r := bytes.NewBufferString(str)
-	s := newScannerWithTagConf(r, "memory", "[%", "%]")
-	var tokens []myToken
-	i := 0
-	for s.Next() {
-		tok := s.Token()
-		id := tok.ID
-		val := string(tok.Value)
-		fmt.Printf("%d - %s\n", id, val)
-		tokens = append(tokens, myToken{
-			ID:    s.Token().ID,
-			Value: string(s.Token().Value),
-		})
-		fmt.Printf("token[%d] : %d - %s\n", i, s.Token().ID, string(s.Token().Value))
-		i++
-	}
-	count := len(tokens)
-
-	fmt.Printf("found %d tokens when scanning %q.  \n", count, str)
-}
-
 func main() {
+	flag.Parse()
 
-	//testItBrace()
-	testItBracket()
+	if len(*file) > 0 {
+		compileSingleFile(*file)
+		return
+	}
 
-	// flag.Parse()
+	if len(*ext) == 0 {
+		logger.Fatalf("ext cannot be empty")
+	}
+	if len(*dir) == 0 {
+		*dir = "."
+	}
+	if (*ext)[0] != '.' {
+		*ext = "." + *ext
+	}
 
-	// if len(*file) > 0 {
-	// 	compileSingleFile(*file)
-	// 	return
-	// }
-
-	// if len(*ext) == 0 {
-	// 	logger.Fatalf("ext cannot be empty")
-	// }
-	// if len(*dir) == 0 {
-	// 	*dir = "."
-	// }
-	// if (*ext)[0] != '.' {
-	// 	*ext = "." + *ext
-	// }
-
-	// logger.Printf("Compiling *%s template files in directory %q", *ext, *dir)
-	// compileDir(*dir)
-	// logger.Printf("Total files compiled: %d", filesCompiled)
+	logger.Printf("Compiling *%s template files in directory %q", *ext, *dir)
+	compileDir(*dir)
+	logger.Printf("Total files compiled: %d", filesCompiled)
 }
 
 func compileSingleFile(filename string) {
@@ -184,7 +124,13 @@ func compileFile(infile string) {
 	if err != nil {
 		logger.Fatalf("cannot determine package name for %q: %s", infile, err)
 	}
-	if err = parse(outf, inf, infile, packageName); err != nil {
+
+	var scannerConfig = &config{
+		TagStartingDelimiter: *startTag,
+		TagEndingDelimiter:   *endTag,
+	}
+
+	if err = parse(outf, inf, infile, packageName, scannerConfig); err != nil {
 		logger.Fatalf("error when parsing file %q: %s", infile, err)
 	}
 	if err = outf.Close(); err != nil {

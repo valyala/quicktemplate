@@ -25,11 +25,25 @@ type parser struct {
 	packageNameEmitted bool
 }
 
-func parse(w io.Writer, r io.Reader, filePath, packageName string) error {
-	p := &parser{
-		s:           newScanner(r, filePath),
-		w:           w,
-		packageName: packageName,
+type config struct {
+	TagStartingDelimiter string
+	TagEndingDelimiter   string
+}
+
+func parse(w io.Writer, r io.Reader, filePath, packageName string, parserConfig *config) error {
+	var p *parser
+	if parserConfig == nil {
+		p = &parser{
+			s:           newScanner(r, filePath),
+			w:           w,
+			packageName: packageName,
+		}
+	} else {
+		p = &parser{
+			s:           newScannerWithTagConf(r, filePath, parserConfig.TagStartingDelimiter, parserConfig.TagEndingDelimiter),
+			w:           w,
+			packageName: packageName,
+		}
 	}
 	return p.parseTemplate()
 }
