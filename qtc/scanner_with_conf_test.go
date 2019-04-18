@@ -135,7 +135,7 @@ func TestScannerConfigurationPlainFailure(t *testing.T) {
 /*TestScannerCommentSuccess ...
  */
 func TestScannerConfigurationCommentSuccess(t *testing.T) {
-	testScannerConfigurationSuccess(t, "[{comment}]groumpf[{endcomment}]", nil)
+	testScannerConfigurationSuccess(t, "[{comment}][{endcomment}]", nil)
 	testScannerConfigurationSuccess(t, "[{comment}]foo[{endcomment}]", nil)
 	testScannerConfigurationSuccess(t, "[{comment}]foo[{endcomment}][{comment}]sss[{endcomment}]", nil)
 	testScannerConfigurationSuccess(t, "[{comment}]foo[{bar}][{endcomment}]", nil)

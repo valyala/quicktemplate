@@ -308,7 +308,7 @@ func (s *scanner) readTagContents() bool {
 	s.skipSpace()
 	s.t.init(tagContents, s.line, s.pos())
 	for {
-		if s.c != s.openingTag[0] {
+		if s.c != s.closingTag[0] {
 			s.appendByte()
 			if !s.nextByte() {
 				return false
@@ -319,12 +319,12 @@ func (s *scanner) readTagContents() bool {
 			s.appendByte()
 			return false
 		}
-		if s.c == s.openingTag[1] {
+		if s.c == s.closingTag[1] {
 			s.nextTokenID = text
 			s.t.Value = stripTrailingSpace(s.t.Value)
 			return true
 		}
-		s.unreadByte('%')
+		s.unreadByte(s.closingTag[0])
 		s.appendByte()
 		if !s.nextByte() {
 			return false
