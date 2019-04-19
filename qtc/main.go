@@ -21,16 +21,37 @@ var (
 		"Flags -dir and -ext are ignored if file is set.\n"+
 		"The compiled file will be placed near the original file with .go extension added.")
 	ext      = flag.String("ext", "qtpl", "Only files with this extension are compiled")
+	s        = flag.String("s", "", "starting")
 	startTag = flag.String("sTag", "{%", "tag starting delimiter (2 chars)")
-	endTag   = flag.String("eTag", "{%", "tag ending delimiter (2 chars)")
+	endTag   = flag.String("eTag", "%}", "tag ending delimiter (2 chars)")
 )
 
 var logger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
 
 var filesCompiled int
 
+func checkDelimiters() {
+	start := *startTag
+	end := *endTag
+
+	if len(start) != 2 {
+		logger.Fatalf("tag starting delimiter '%s' must be 2 chars length", start)
+	}
+	if len(end) != 2 {
+		logger.Fatalf("tag ending delimiter '%s' must be 2 chars length", end)
+	}
+
+	if start[1] != end[0] {
+		logger.Fatalf("starting delimiter last char ('%s') and ending delimiter first char ('%s') must be the same", string(start[1]), string(end[0]))
+	}
+
+}
+
 func main() {
+
 	flag.Parse()
+
+	checkDelimiters()
 
 	if len(*file) > 0 {
 		compileSingleFile(*file)
