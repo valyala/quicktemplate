@@ -21,7 +21,6 @@ var (
 		"Flags -dir and -ext are ignored if file is set.\n"+
 		"The compiled file will be placed near the original file with .go extension added.")
 	ext      = flag.String("ext", "qtpl", "Only files with this extension are compiled")
-	s        = flag.String("s", "", "starting")
 	startTag = flag.String("sTag", "{%", "tag starting delimiter (2 chars)")
 	endTag   = flag.String("eTag", "%}", "tag ending delimiter (2 chars)")
 )
