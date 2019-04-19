@@ -549,7 +549,7 @@ else
 func testParseFailure(t *testing.T, str string) {
 	r := bytes.NewBufferString(str)
 	w := &bytes.Buffer{}
-	if err := parse(w, r, "./foobar.tpl", "memory"); err == nil {
+	if err := parse(w, r, "./foobar.tpl", "memory", nil); err == nil {
 		t.Fatalf("expecting error when parsing %q", str)
 	}
 }
@@ -557,7 +557,7 @@ func testParseFailure(t *testing.T, str string) {
 func testParseSuccess(t *testing.T, str string) {
 	r := bytes.NewBufferString(str)
 	w := &bytes.Buffer{}
-	if err := parse(w, r, "./foobar.tpl", "memory"); err != nil {
+	if err := parse(w, r, "./foobar.tpl", "memory", nil); err != nil {
 		t.Fatalf("unexpected error when parsing %q: %s", str, err)
 	}
 }
@@ -576,7 +576,7 @@ func TestParseFile(t *testing.T) {
 	}
 
 	w := quicktemplate.AcquireByteBuffer()
-	if err := parse(w, f, filename, packageName); err != nil {
+	if err := parse(w, f, filename, packageName, nil); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	code, err := format.Source(w.B)

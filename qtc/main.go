@@ -20,15 +20,37 @@ var (
 	file = flag.String("file", "", "Path to template file to compile.\n"+
 		"Flags -dir and -ext are ignored if file is set.\n"+
 		"The compiled file will be placed near the original file with .go extension added.")
-	ext = flag.String("ext", "qtpl", "Only files with this extension are compiled")
+	ext      = flag.String("ext", "qtpl", "Only files with this extension are compiled")
+	startTag = flag.String("sTag", "{%", "tag starting delimiter (2 chars)")
+	endTag   = flag.String("eTag", "%}", "tag ending delimiter (2 chars)")
 )
 
 var logger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
 
 var filesCompiled int
 
+func checkDelimiters() {
+	start := *startTag
+	end := *endTag
+
+	if len(start) != 2 {
+		logger.Fatalf("tag starting delimiter '%s' must be 2 chars length", start)
+	}
+	if len(end) != 2 {
+		logger.Fatalf("tag ending delimiter '%s' must be 2 chars length", end)
+	}
+
+	if start[1] != end[0] {
+		logger.Fatalf("starting delimiter last char ('%s') and ending delimiter first char ('%s') must be the same", string(start[1]), string(end[0]))
+	}
+
+}
+
 func main() {
+
 	flag.Parse()
+
+	checkDelimiters()
 
 	if len(*file) > 0 {
 		compileSingleFile(*file)
@@ -122,7 +144,13 @@ func compileFile(infile string) {
 	if err != nil {
 		logger.Fatalf("cannot determine package name for %q: %s", infile, err)
 	}
-	if err = parse(outf, inf, infile, packageName); err != nil {
+
+	var scannerConfig = &config{
+		TagStartingDelimiter: *startTag,
+		TagEndingDelimiter:   *endTag,
+	}
+
+	if err = parse(outf, inf, infile, packageName, scannerConfig); err != nil {
 		logger.Fatalf("error when parsing file %q: %s", infile, err)
 	}
 	if err = outf.Close(); err != nil {

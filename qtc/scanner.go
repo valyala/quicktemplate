@@ -49,10 +49,12 @@ func (t *token) String() string {
 }
 
 type scanner struct {
-	r   *bufio.Reader
-	t   token
-	c   byte
-	err error
+	openingTag []byte
+	closingTag []byte
+	r          *bufio.Reader
+	t          token
+	c          byte
+	err        error
 
 	filePath string
 
@@ -69,11 +71,17 @@ type scanner struct {
 	rewind             bool
 }
 
-func newScanner(r io.Reader, filePath string) *scanner {
+func newScannerWithTagConf(r io.Reader, filePath string, openTag string, closeTag string) *scanner {
 	return &scanner{
-		r:        bufio.NewReader(r),
-		filePath: filePath,
+		r:          bufio.NewReader(r),
+		filePath:   filePath,
+		openingTag: []byte(openTag),
+		closingTag: []byte(closeTag),
 	}
+}
+
+func newScanner(r io.Reader, filePath string) *scanner {
+	return newScannerWithTagConf(r, filePath, "{%", "%}")
 }
 
 func (s *scanner) Rewind() {
@@ -177,14 +185,14 @@ func (s *scanner) readPlain() bool {
 	v := s.stopCapture()
 	s.t.init(text, startLine, startPos)
 	if ok {
-		n := bytes.LastIndex(v, strTagOpen)
+		n := bytes.LastIndex(v, s.openingTag)
 		v = v[:n]
 		s.t.Value = append(s.t.Value[:0], v...)
 	}
 	return ok
 }
 
-var strTagOpen = []byte("{%")
+//var strTagOpen = openingTag //[]byte("{%")
 
 func (s *scanner) skipComment() bool {
 	if !s.readTagContents() {
@@ -199,13 +207,13 @@ func (s *scanner) skipUntilTag(tagName string) bool {
 		if !s.nextByte() {
 			break
 		}
-		if s.c != '{' {
+		if s.c != s.openingTag[0] {
 			continue
 		}
 		if !s.nextByte() {
 			break
 		}
-		if s.c != '%' {
+		if s.c != s.openingTag[1] {
 			s.unreadByte('~')
 			continue
 		}
@@ -247,7 +255,7 @@ func (s *scanner) readText() bool {
 			ok = (len(s.t.Value) > 0)
 			break
 		}
-		if s.c != '{' {
+		if s.c != s.openingTag[0] {
 			s.appendByte()
 			continue
 		}
@@ -256,12 +264,12 @@ func (s *scanner) readText() bool {
 			ok = true
 			break
 		}
-		if s.c == '%' {
+		if s.c == s.openingTag[1] {
 			s.nextTokenID = tagName
 			ok = true
 			break
 		}
-		s.unreadByte('{')
+		s.unreadByte(s.openingTag[0])
 		s.appendByte()
 	}
 	if s.stripSpaceDepth > 0 {
@@ -276,8 +284,8 @@ func (s *scanner) readTagName() bool {
 	s.skipSpace()
 	s.t.init(tagName, s.line, s.pos())
 	for {
-		if s.isSpace() || s.c == '%' {
-			if s.c == '%' {
+		if s.isSpace() || s.c == s.closingTag[0] {
+			if s.c == s.closingTag[0] {
 				s.unreadByte('~')
 			}
 			s.nextTokenID = tagContents
@@ -300,7 +308,7 @@ func (s *scanner) readTagContents() bool {
 	s.skipSpace()
 	s.t.init(tagContents, s.line, s.pos())
 	for {
-		if s.c != '%' {
+		if s.c != s.closingTag[0] {
 			s.appendByte()
 			if !s.nextByte() {
 				return false
@@ -311,12 +319,12 @@ func (s *scanner) readTagContents() bool {
 			s.appendByte()
 			return false
 		}
-		if s.c == '}' {
+		if s.c == s.closingTag[1] {
 			s.nextTokenID = text
 			s.t.Value = stripTrailingSpace(s.t.Value)
 			return true
 		}
-		s.unreadByte('%')
+		s.unreadByte(s.closingTag[0])
 		s.appendByte()
 		if !s.nextByte() {
 			return false

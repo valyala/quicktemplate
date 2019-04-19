@@ -1,1 +1,3 @@
 tags
+**/*.qtpl.go
+*.qtpl.go
