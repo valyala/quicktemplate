@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"bytes"
@@ -87,7 +87,7 @@ func TestParseCat(t *testing.T) {
 	// relative paths
 	testParseSuccess(t, `{% func a() %}{% cat "parser.go" %}{% endfunc %}`)
 	testParseSuccess(t, `{% func a() %}{% cat "./parser.go" %}{% endfunc %}`)
-	testParseSuccess(t, `{% func a() %}{% cat "../qtc/parser.go" %}{% endfunc %}`)
+	testParseSuccess(t, `{% func a() %}{% cat "../parser/parser.go" %}{% endfunc %}`)
 
 	// multi-cat
 	testParseSuccess(t, `{% func a() %}{% cat "parser.go" %}{% cat "./parser.go" %}{% endfunc %}`)
@@ -549,7 +549,7 @@ else
 func testParseFailure(t *testing.T, str string) {
 	r := bytes.NewBufferString(str)
 	w := &bytes.Buffer{}
-	if err := parse(w, r, "./foobar.tpl", "memory"); err == nil {
+	if err := Parse(w, r, "qtc-test.qtpl", "memory"); err == nil {
 		t.Fatalf("expecting error when parsing %q", str)
 	}
 }
@@ -557,26 +557,34 @@ func testParseFailure(t *testing.T, str string) {
 func testParseSuccess(t *testing.T, str string) {
 	r := bytes.NewBufferString(str)
 	w := &bytes.Buffer{}
-	if err := parse(w, r, "./foobar.tpl", "memory"); err != nil {
+	if err := Parse(w, r, "qtc-test.qtpl", "memory"); err != nil {
 		t.Fatalf("unexpected error when parsing %q: %s", str, err)
 	}
 }
 
 func TestParseFile(t *testing.T) {
-	filename := "testdata/test.qtpl"
+	currDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("cannot obtain current directory: %s", err)
+	}
+	if err := os.Chdir("../testdata/qtc"); err != nil {
+		t.Fatalf("cannot change directory to `../testdata/qtc`: %s", err)
+	}
+	defer func() {
+		if err := os.Chdir(currDir); err != nil {
+			t.Fatalf("cannot change directory to %q: %s", currDir, err)
+		}
+	}()
+
+	filename := "test.qtpl"
 	f, err := os.Open(filename)
 	if err != nil {
 		t.Fatalf("cannot open file %q: %s", filename, err)
 	}
 	defer f.Close()
 
-	packageName, err := getPackageName(filename)
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
-	}
-
 	w := quicktemplate.AcquireByteBuffer()
-	if err := parse(w, f, filename, packageName); err != nil {
+	if err := Parse(w, f, "test.qtpl", "qtc"); err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	code, err := format.Source(w.B)
@@ -585,14 +593,16 @@ func TestParseFile(t *testing.T) {
 	}
 	quicktemplate.ReleaseByteBuffer(w)
 
-	expectedFilename := filename + ".compiled"
+	expectedFilename := filename + ".expected"
 	expectedCode, err := ioutil.ReadFile(expectedFilename)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
 	if !bytes.Equal(code, expectedCode) {
-		t.Fatalf("unexpected code: %q\nExpecting %q", code, expectedCode)
+		if err := ioutil.WriteFile(filename+".generated", code, 0644); err != nil {
+			t.Fatal(err)
+		}
+		t.Fatalf("unexpected code:\n%q\nexpected:\n%q", code, expectedCode)
 	}
-
 }
