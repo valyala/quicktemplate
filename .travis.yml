@@ -1,7 +1,9 @@
 language: go
 
 go:
-  - "1.11"
+  - 1.11.x
+  - 1.12.x
+  - tip
 
 before_install:
   - go get -u github.com/valyala/quicktemplate/qtc
