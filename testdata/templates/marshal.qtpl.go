@@ -36,63 +36,63 @@ type MarshalData struct {
 
 //line testdata/templates/marshal.qtpl:18
 func (d *MarshalData) StreamJSON(qw422016 *qt422016.Writer) {
-	//line testdata/templates/marshal.qtpl:18
+//line testdata/templates/marshal.qtpl:18
 	qw422016.N().S(`{"Foo":`)
-	//line testdata/templates/marshal.qtpl:20
+//line testdata/templates/marshal.qtpl:20
 	qw422016.N().D(d.Foo)
-	//line testdata/templates/marshal.qtpl:20
+//line testdata/templates/marshal.qtpl:20
 	qw422016.N().S(`,"Bar":`)
-	//line testdata/templates/marshal.qtpl:21
+//line testdata/templates/marshal.qtpl:21
 	qw422016.N().Q(d.Bar)
-	//line testdata/templates/marshal.qtpl:21
+//line testdata/templates/marshal.qtpl:21
 	qw422016.N().S(`,"Rows":[`)
-	//line testdata/templates/marshal.qtpl:23
+//line testdata/templates/marshal.qtpl:23
 	for i, r := range d.Rows {
-		//line testdata/templates/marshal.qtpl:23
+//line testdata/templates/marshal.qtpl:23
 		qw422016.N().S(`{"Msg":`)
-		//line testdata/templates/marshal.qtpl:25
+//line testdata/templates/marshal.qtpl:25
 		qw422016.N().Q(r.Msg)
-		//line testdata/templates/marshal.qtpl:25
+//line testdata/templates/marshal.qtpl:25
 		qw422016.N().S(`,"N":`)
-		//line testdata/templates/marshal.qtpl:26
+//line testdata/templates/marshal.qtpl:26
 		qw422016.N().D(r.N)
-		//line testdata/templates/marshal.qtpl:26
+//line testdata/templates/marshal.qtpl:26
 		qw422016.N().S(`}`)
-		//line testdata/templates/marshal.qtpl:28
+//line testdata/templates/marshal.qtpl:28
 		if i+1 < len(d.Rows) {
-			//line testdata/templates/marshal.qtpl:28
+//line testdata/templates/marshal.qtpl:28
 			qw422016.N().S(`,`)
-			//line testdata/templates/marshal.qtpl:28
+//line testdata/templates/marshal.qtpl:28
 		}
-		//line testdata/templates/marshal.qtpl:29
+//line testdata/templates/marshal.qtpl:29
 	}
-	//line testdata/templates/marshal.qtpl:29
+//line testdata/templates/marshal.qtpl:29
 	qw422016.N().S(`]}`)
 //line testdata/templates/marshal.qtpl:32
 }
 
 //line testdata/templates/marshal.qtpl:32
 func (d *MarshalData) WriteJSON(qq422016 qtio422016.Writer) {
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	d.StreamJSON(qw422016)
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	qt422016.ReleaseWriter(qw422016)
 //line testdata/templates/marshal.qtpl:32
 }
 
 //line testdata/templates/marshal.qtpl:32
 func (d *MarshalData) JSON() string {
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	d.WriteJSON(qb422016)
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	qs422016 := string(qb422016.B)
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line testdata/templates/marshal.qtpl:32
+//line testdata/templates/marshal.qtpl:32
 	return qs422016
 //line testdata/templates/marshal.qtpl:32
 }
@@ -101,57 +101,57 @@ func (d *MarshalData) JSON() string {
 
 //line testdata/templates/marshal.qtpl:37
 func (d *MarshalData) StreamXML(qw422016 *qt422016.Writer) {
-	//line testdata/templates/marshal.qtpl:37
+//line testdata/templates/marshal.qtpl:37
 	qw422016.N().S(`<MarshalData><Foo>`)
-	//line testdata/templates/marshal.qtpl:39
+//line testdata/templates/marshal.qtpl:39
 	qw422016.N().D(d.Foo)
-	//line testdata/templates/marshal.qtpl:39
+//line testdata/templates/marshal.qtpl:39
 	qw422016.N().S(`</Foo><Bar>`)
-	//line testdata/templates/marshal.qtpl:40
+//line testdata/templates/marshal.qtpl:40
 	qw422016.E().S(d.Bar)
-	//line testdata/templates/marshal.qtpl:40
+//line testdata/templates/marshal.qtpl:40
 	qw422016.N().S(`</Bar>`)
-	//line testdata/templates/marshal.qtpl:41
+//line testdata/templates/marshal.qtpl:41
 	for _, r := range d.Rows {
-		//line testdata/templates/marshal.qtpl:41
+//line testdata/templates/marshal.qtpl:41
 		qw422016.N().S(`<Rows><Msg>`)
-		//line testdata/templates/marshal.qtpl:43
+//line testdata/templates/marshal.qtpl:43
 		qw422016.E().S(r.Msg)
-		//line testdata/templates/marshal.qtpl:43
+//line testdata/templates/marshal.qtpl:43
 		qw422016.N().S(`</Msg><N>`)
-		//line testdata/templates/marshal.qtpl:44
+//line testdata/templates/marshal.qtpl:44
 		qw422016.N().D(r.N)
-		//line testdata/templates/marshal.qtpl:44
+//line testdata/templates/marshal.qtpl:44
 		qw422016.N().S(`</N></Rows>`)
-		//line testdata/templates/marshal.qtpl:46
+//line testdata/templates/marshal.qtpl:46
 	}
-	//line testdata/templates/marshal.qtpl:46
+//line testdata/templates/marshal.qtpl:46
 	qw422016.N().S(`</MarshalData>`)
 //line testdata/templates/marshal.qtpl:48
 }
 
 //line testdata/templates/marshal.qtpl:48
 func (d *MarshalData) WriteXML(qq422016 qtio422016.Writer) {
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	d.StreamXML(qw422016)
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	qt422016.ReleaseWriter(qw422016)
 //line testdata/templates/marshal.qtpl:48
 }
 
 //line testdata/templates/marshal.qtpl:48
 func (d *MarshalData) XML() string {
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	d.WriteXML(qb422016)
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	qs422016 := string(qb422016.B)
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line testdata/templates/marshal.qtpl:48
+//line testdata/templates/marshal.qtpl:48
 	return qs422016
 //line testdata/templates/marshal.qtpl:48
 }

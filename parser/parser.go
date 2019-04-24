@@ -801,7 +801,7 @@ func (p *parser) Printf(format string, args ...interface{}) {
 		return
 	}
 	w := p.w
-	fmt.Fprintf(w, "%s", p.prefix)
+	// line comments are required to start at the beginning of the line
 	p.s.WriteLineComment(w)
 	fmt.Fprintf(w, "%s", p.prefix)
 	fmt.Fprintf(w, format, args...)

@@ -43,233 +43,233 @@ type FooArgs struct {
 
 //line test.qtpl:24
 func StreamFoo(qw422016 *qt422016.Writer, a []FooArgs) {
-	//line test.qtpl:24
+//line test.qtpl:24
 	qw422016.N().S(`
 	<h1>Hello, I'm Foo!</h1>
 	<div>
 		My args are:
 		`)
-	//line test.qtpl:28
+//line test.qtpl:28
 	if len(a) == 0 {
-		//line test.qtpl:28
+//line test.qtpl:28
 		qw422016.N().S(`
 			no args!
 		`)
-		//line test.qtpl:30
+//line test.qtpl:30
 	} else if len(a) == 1 {
-		//line test.qtpl:30
+//line test.qtpl:30
 		qw422016.N().S(`
 			a single arg: `)
-		//line test.qtpl:31
+//line test.qtpl:31
 		streamprintArgs(qw422016, 0, &a[0])
-		//line test.qtpl:31
+//line test.qtpl:31
 		qw422016.N().S(`
 		`)
-		//line test.qtpl:32
+//line test.qtpl:32
 	} else {
-		//line test.qtpl:32
+//line test.qtpl:32
 		qw422016.N().S(`
 			<ul>
 			`)
-		//line test.qtpl:34
+//line test.qtpl:34
 		for i, aa := range a {
-			//line test.qtpl:34
+//line test.qtpl:34
 			qw422016.N().S(`
 				`)
-			//line test.qtpl:35
+//line test.qtpl:35
 			if i >= 42 {
-				//line test.qtpl:35
+//line test.qtpl:35
 				qw422016.N().S(`
 					There are other args, but only the first 42 of them are shown
 					`)
-				//line test.qtpl:37
+//line test.qtpl:37
 				break
-				//line test.qtpl:40
+//line test.qtpl:40
 			} else if aa.N == 3 {
-				//line test.qtpl:40
+//line test.qtpl:40
 				qw422016.N().S(`
 					`)
-				//line test.qtpl:41
+//line test.qtpl:41
 				continue
-				//line test.qtpl:43
+//line test.qtpl:43
 			}
-			//line test.qtpl:43
+//line test.qtpl:43
 			qw422016.N().S(`
 
 				no html encoding: `)
-			//line test.qtpl:45
+//line test.qtpl:45
 			streamprintArgs(qw422016, i, &aa)
-			//line test.qtpl:45
+//line test.qtpl:45
 			qw422016.N().S(`
 				html encoding: `)
-			//line test.qtpl:46
+//line test.qtpl:46
 			{
-				//line test.qtpl:46
+//line test.qtpl:46
 				qb422016 := qt422016.AcquireByteBuffer()
-				//line test.qtpl:46
+//line test.qtpl:46
 				writeprintArgs(qb422016, i, &aa)
-				//line test.qtpl:46
+//line test.qtpl:46
 				qw422016.E().Z(qb422016.B)
-				//line test.qtpl:46
+//line test.qtpl:46
 				qt422016.ReleaseByteBuffer(qb422016)
-				//line test.qtpl:46
+//line test.qtpl:46
 			}
-			//line test.qtpl:46
+//line test.qtpl:46
 			qw422016.N().S(`
 				url encoding: `)
-			//line test.qtpl:47
+//line test.qtpl:47
 			{
-				//line test.qtpl:47
+//line test.qtpl:47
 				qb422016 := qt422016.AcquireByteBuffer()
-				//line test.qtpl:47
+//line test.qtpl:47
 				writeprintArgs(qb422016, i, &aa)
-				//line test.qtpl:47
+//line test.qtpl:47
 				qw422016.N().UZ(qb422016.B)
-				//line test.qtpl:47
+//line test.qtpl:47
 				qt422016.ReleaseByteBuffer(qb422016)
-				//line test.qtpl:47
+//line test.qtpl:47
 			}
-			//line test.qtpl:47
+//line test.qtpl:47
 			qw422016.N().S(`
 				html-encoded url encoding: `)
-			//line test.qtpl:48
+//line test.qtpl:48
 			{
-				//line test.qtpl:48
+//line test.qtpl:48
 				qb422016 := qt422016.AcquireByteBuffer()
-				//line test.qtpl:48
+//line test.qtpl:48
 				writeprintArgs(qb422016, i, &aa)
-				//line test.qtpl:48
+//line test.qtpl:48
 				qw422016.N().UZ(qb422016.B)
-				//line test.qtpl:48
+//line test.qtpl:48
 				qt422016.ReleaseByteBuffer(qb422016)
-				//line test.qtpl:48
+//line test.qtpl:48
 			}
-			//line test.qtpl:48
+//line test.qtpl:48
 			qw422016.N().S(`
 				quoted json string: `)
-			//line test.qtpl:49
+//line test.qtpl:49
 			{
-				//line test.qtpl:49
+//line test.qtpl:49
 				qb422016 := qt422016.AcquireByteBuffer()
-				//line test.qtpl:49
+//line test.qtpl:49
 				writeprintArgs(qb422016, i, &aa)
-				//line test.qtpl:49
+//line test.qtpl:49
 				qw422016.N().QZ(qb422016.B)
-				//line test.qtpl:49
+//line test.qtpl:49
 				qt422016.ReleaseByteBuffer(qb422016)
-				//line test.qtpl:49
+//line test.qtpl:49
 			}
-			//line test.qtpl:49
+//line test.qtpl:49
 			qw422016.N().S(`
 				html-encoded quoted json string: `)
-			//line test.qtpl:50
+//line test.qtpl:50
 			{
-				//line test.qtpl:50
+//line test.qtpl:50
 				qb422016 := qt422016.AcquireByteBuffer()
-				//line test.qtpl:50
+//line test.qtpl:50
 				writeprintArgs(qb422016, i, &aa)
-				//line test.qtpl:50
+//line test.qtpl:50
 				qw422016.E().QZ(qb422016.B)
-				//line test.qtpl:50
+//line test.qtpl:50
 				qt422016.ReleaseByteBuffer(qb422016)
-				//line test.qtpl:50
+//line test.qtpl:50
 			}
-			//line test.qtpl:50
+//line test.qtpl:50
 			qw422016.N().S(`
 				unquoted json string: `)
-			//line test.qtpl:51
+//line test.qtpl:51
 			{
-				//line test.qtpl:51
+//line test.qtpl:51
 				qb422016 := qt422016.AcquireByteBuffer()
-				//line test.qtpl:51
+//line test.qtpl:51
 				writeprintArgs(qb422016, i, &aa)
-				//line test.qtpl:51
+//line test.qtpl:51
 				qw422016.N().JZ(qb422016.B)
-				//line test.qtpl:51
+//line test.qtpl:51
 				qt422016.ReleaseByteBuffer(qb422016)
-				//line test.qtpl:51
+//line test.qtpl:51
 			}
-			//line test.qtpl:51
+//line test.qtpl:51
 			qw422016.N().S(`
 				html-encoded unquoted json string: `)
-			//line test.qtpl:52
+//line test.qtpl:52
 			{
-				//line test.qtpl:52
+//line test.qtpl:52
 				qb422016 := qt422016.AcquireByteBuffer()
-				//line test.qtpl:52
+//line test.qtpl:52
 				writeprintArgs(qb422016, i, &aa)
-				//line test.qtpl:52
+//line test.qtpl:52
 				qw422016.E().JZ(qb422016.B)
-				//line test.qtpl:52
+//line test.qtpl:52
 				qt422016.ReleaseByteBuffer(qb422016)
-				//line test.qtpl:52
+//line test.qtpl:52
 			}
-			//line test.qtpl:52
+//line test.qtpl:52
 			qw422016.N().S(`
 
 				Arbitrary Go code may be inserted here: `)
-			//line test.qtpl:54
+//line test.qtpl:54
 			str := strconv.Itoa(i + 42)
 
-			//line test.qtpl:54
+//line test.qtpl:54
 			qw422016.N().S(`
 				str = `)
-			//line test.qtpl:55
+//line test.qtpl:55
 			qw422016.E().S(fmt.Sprintf("this html will be escaped <b>%s</b>", str))
-			//line test.qtpl:55
+//line test.qtpl:55
 			qw422016.N().S(`
 			`)
-			//line test.qtpl:56
+//line test.qtpl:56
 		}
-		//line test.qtpl:56
+//line test.qtpl:56
 		qw422016.N().S(`
 			</ul>
 		`)
-		//line test.qtpl:58
+//line test.qtpl:58
 	}
-	//line test.qtpl:58
+//line test.qtpl:58
 	qw422016.N().S(`
 	</div>
 	`)
-	//line test.qtpl:60
+//line test.qtpl:60
 	qw422016.N().S(`
 		Arbitrary tags are treated as plaintext inside plain.
 		For instance, {% foo %} {% bar %} {% for %}
 		{% func %} {% code %} {% return %} {% break %} {% comment %}
 		and even {% unclosed tag
 	`)
-	//line test.qtpl:65
+//line test.qtpl:65
 	qw422016.N().S(`
 	`)
-	//line test.qtpl:66
+//line test.qtpl:66
 	qw422016.N().S(` Leading and trailing space between lines and tags is collapsed inside collapsespace unless `)
-	//line test.qtpl:68
+//line test.qtpl:68
 	qw422016.N().S(` `)
-	//line test.qtpl:68
+//line test.qtpl:68
 	qw422016.N().S(` or `)
-	//line test.qtpl:68
+//line test.qtpl:68
 	qw422016.N().S(`
 `)
-	//line test.qtpl:68
+//line test.qtpl:68
 	qw422016.N().S(` is used `)
-	//line test.qtpl:69
+//line test.qtpl:69
 	qw422016.N().S(`
 	`)
-	//line test.qtpl:70
+//line test.qtpl:70
 	qw422016.N().S(`Leading and trailing space between lines and tags is completelyremoved unless`)
-	//line test.qtpl:72
+//line test.qtpl:72
 	qw422016.N().S(` `)
-	//line test.qtpl:72
+//line test.qtpl:72
 	qw422016.N().S(`or`)
-	//line test.qtpl:72
+//line test.qtpl:72
 	qw422016.N().S(`
 `)
-	//line test.qtpl:72
+//line test.qtpl:72
 	qw422016.N().S(`is used`)
-	//line test.qtpl:73
+//line test.qtpl:73
 	qw422016.N().S(`
 	`)
-	//line test.qtpl:74
+//line test.qtpl:74
 	qw422016.N().S(`This is a test template file.
 All the lines outside func and code are just comments.
 
@@ -429,7 +429,7 @@ variadic function
 	{% endfor %}
 {% endfunc %}
 `)
-	//line test.qtpl:74
+//line test.qtpl:74
 	qw422016.N().S(`
 `)
 //line test.qtpl:75
@@ -437,26 +437,26 @@ variadic function
 
 //line test.qtpl:75
 func WriteFoo(qq422016 qtio422016.Writer, a []FooArgs) {
-	//line test.qtpl:75
+//line test.qtpl:75
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:75
+//line test.qtpl:75
 	StreamFoo(qw422016, a)
-	//line test.qtpl:75
+//line test.qtpl:75
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:75
 }
 
 //line test.qtpl:75
 func Foo(a []FooArgs) string {
-	//line test.qtpl:75
+//line test.qtpl:75
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:75
+//line test.qtpl:75
 	WriteFoo(qb422016, a)
-	//line test.qtpl:75
+//line test.qtpl:75
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:75
+//line test.qtpl:75
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:75
+//line test.qtpl:75
 	return qs422016
 //line test.qtpl:75
 }
@@ -465,113 +465,113 @@ func Foo(a []FooArgs) string {
 
 //line test.qtpl:80
 func streamprintArgs(qw422016 *qt422016.Writer, i int, a *FooArgs) {
-	//line test.qtpl:80
+//line test.qtpl:80
 	qw422016.N().S(`
 	`)
-	//line test.qtpl:81
+//line test.qtpl:81
 	if i == 0 {
-		//line test.qtpl:81
+//line test.qtpl:81
 		qw422016.N().S(`
 		Hide args for i = 0
 		`)
-		//line test.qtpl:83
+//line test.qtpl:83
 		return
-		//line test.qtpl:87
+//line test.qtpl:87
 	}
-	//line test.qtpl:87
+//line test.qtpl:87
 	qw422016.N().S(`
 	<li>
 		a[`)
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.N().D(i)
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.N().S(`] = {S: `)
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.E().Q(a.S)
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.N().S(`, SS: `)
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.E().QZ([]byte(a.S))
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.N().S(`, N: `)
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.N().D(a.N)
-	//line test.qtpl:89
+//line test.qtpl:89
 	qw422016.N().S(`}<br>
 		`)
-	//line test.qtpl:90
+//line test.qtpl:90
 	qw422016.E().S(a.S)
-	//line test.qtpl:90
+//line test.qtpl:90
 	qw422016.N().S(`, `)
-	//line test.qtpl:90
+//line test.qtpl:90
 	qw422016.E().Z([]byte(a.S))
-	//line test.qtpl:90
+//line test.qtpl:90
 	qw422016.N().S(`, `)
-	//line test.qtpl:90
+//line test.qtpl:90
 	qw422016.E().SZ([]byte(a.S))
-	//line test.qtpl:90
+//line test.qtpl:90
 	qw422016.N().S(`
 		`)
-	//line test.qtpl:91
+//line test.qtpl:91
 	qw422016.N().F(1.234)
-	//line test.qtpl:91
+//line test.qtpl:91
 	qw422016.N().S(`, `)
-	//line test.qtpl:91
+//line test.qtpl:91
 	qw422016.N().FPrec(1.234, 1)
-	//line test.qtpl:91
+//line test.qtpl:91
 	qw422016.N().S(`, `)
-	//line test.qtpl:91
+//line test.qtpl:91
 	qw422016.N().FPrec(1.234, 2)
-	//line test.qtpl:91
+//line test.qtpl:91
 	qw422016.N().S(`
 		alert("foo `)
-	//line test.qtpl:92
+//line test.qtpl:92
 	qw422016.E().J("bar\naaa")
-	//line test.qtpl:92
+//line test.qtpl:92
 	qw422016.N().S(` baz `)
-	//line test.qtpl:92
+//line test.qtpl:92
 	qw422016.E().JZ([]byte("aaa"))
-	//line test.qtpl:92
+//line test.qtpl:92
 	qw422016.N().S(`")<br/>
 		<a href="?`)
-	//line test.qtpl:93
+//line test.qtpl:93
 	qw422016.N().U("аргумент 1")
-	//line test.qtpl:93
+//line test.qtpl:93
 	qw422016.N().S(`=`)
-	//line test.qtpl:93
+//line test.qtpl:93
 	qw422016.N().U("значение=<>\"'&1")
-	//line test.qtpl:93
+//line test.qtpl:93
 	qw422016.N().S(`">test1</a>
 		<a href="?`)
-	//line test.qtpl:94
+//line test.qtpl:94
 	qw422016.N().UZ([]byte("foobar"))
-	//line test.qtpl:94
+//line test.qtpl:94
 	qw422016.N().S(`=123">test2</a>
 	</li>
 
 	Switch statement:
 	`)
-	//line test.qtpl:98
+//line test.qtpl:98
 	qw422016.N().S(`a.S =`)
-	//line test.qtpl:100
+//line test.qtpl:100
 	switch a.S {
-	//line test.qtpl:101
+//line test.qtpl:101
 	case "foo":
-		//line test.qtpl:101
+//line test.qtpl:101
 		qw422016.N().S(`foo`)
-		//line test.qtpl:103
+//line test.qtpl:103
 		break
-	//line test.qtpl:105
+//line test.qtpl:105
 	case "bar":
-		//line test.qtpl:105
+//line test.qtpl:105
 		qw422016.N().S(`bar`)
-	//line test.qtpl:107
+//line test.qtpl:107
 	default:
-		//line test.qtpl:108
+//line test.qtpl:108
 		qw422016.E().Q(a.S)
-		//line test.qtpl:109
+//line test.qtpl:109
 	}
-	//line test.qtpl:110
+//line test.qtpl:110
 	qw422016.N().S(`
 `)
 //line test.qtpl:111
@@ -579,26 +579,26 @@ func streamprintArgs(qw422016 *qt422016.Writer, i int, a *FooArgs) {
 
 //line test.qtpl:111
 func writeprintArgs(qq422016 qtio422016.Writer, i int, a *FooArgs) {
-	//line test.qtpl:111
+//line test.qtpl:111
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:111
+//line test.qtpl:111
 	streamprintArgs(qw422016, i, a)
-	//line test.qtpl:111
+//line test.qtpl:111
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:111
 }
 
 //line test.qtpl:111
 func printArgs(i int, a *FooArgs) string {
-	//line test.qtpl:111
+//line test.qtpl:111
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:111
+//line test.qtpl:111
 	writeprintArgs(qb422016, i, a)
-	//line test.qtpl:111
+//line test.qtpl:111
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:111
+//line test.qtpl:111
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:111
+//line test.qtpl:111
 	return qs422016
 //line test.qtpl:111
 }
@@ -607,17 +607,17 @@ func printArgs(i int, a *FooArgs) string {
 
 //line test.qtpl:115
 type Page interface {
-	//line test.qtpl:115
+//line test.qtpl:115
 	Head() string
-	//line test.qtpl:115
+//line test.qtpl:115
 	StreamHead(qw422016 *qt422016.Writer)
-	//line test.qtpl:115
+//line test.qtpl:115
 	WriteHead(qq422016 qtio422016.Writer)
-	//line test.qtpl:115
+//line test.qtpl:115
 	Body(title string) string
-	//line test.qtpl:115
+//line test.qtpl:115
 	StreamBody(qw422016 *qt422016.Writer, title string)
-	//line test.qtpl:115
+//line test.qtpl:115
 	WriteBody(qq422016 qtio422016.Writer, title string)
 //line test.qtpl:115
 }
@@ -626,18 +626,18 @@ type Page interface {
 
 //line test.qtpl:125
 func StreamPrintPage(qw422016 *qt422016.Writer, p Page, title string) {
-	//line test.qtpl:125
+//line test.qtpl:125
 	qw422016.N().S(`
 	<html>
 		<head>`)
-	//line test.qtpl:127
+//line test.qtpl:127
 	p.StreamHead(qw422016)
-	//line test.qtpl:127
+//line test.qtpl:127
 	qw422016.N().S(`</head>
 		<body>`)
-	//line test.qtpl:128
+//line test.qtpl:128
 	p.StreamBody(qw422016, title)
-	//line test.qtpl:128
+//line test.qtpl:128
 	qw422016.N().S(`</body>
 	</html>
 `)
@@ -646,26 +646,26 @@ func StreamPrintPage(qw422016 *qt422016.Writer, p Page, title string) {
 
 //line test.qtpl:130
 func WritePrintPage(qq422016 qtio422016.Writer, p Page, title string) {
-	//line test.qtpl:130
+//line test.qtpl:130
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:130
+//line test.qtpl:130
 	StreamPrintPage(qw422016, p, title)
-	//line test.qtpl:130
+//line test.qtpl:130
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:130
 }
 
 //line test.qtpl:130
 func PrintPage(p Page, title string) string {
-	//line test.qtpl:130
+//line test.qtpl:130
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:130
+//line test.qtpl:130
 	WritePrintPage(qb422016, p, title)
-	//line test.qtpl:130
+//line test.qtpl:130
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:130
+//line test.qtpl:130
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:130
+//line test.qtpl:130
 	return qs422016
 //line test.qtpl:130
 }
@@ -677,66 +677,66 @@ type ContactsPage struct{}
 
 //line test.qtpl:134
 func (b *ContactsPage) StreamHead(qw422016 *qt422016.Writer) {
-	//line test.qtpl:134
+//line test.qtpl:134
 	qw422016.N().S(`<title>Contacts!</title>`)
 //line test.qtpl:134
 }
 
 //line test.qtpl:134
 func (b *ContactsPage) WriteHead(qq422016 qtio422016.Writer) {
-	//line test.qtpl:134
+//line test.qtpl:134
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:134
+//line test.qtpl:134
 	b.StreamHead(qw422016)
-	//line test.qtpl:134
+//line test.qtpl:134
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:134
 }
 
 //line test.qtpl:134
 func (b *ContactsPage) Head() string {
-	//line test.qtpl:134
+//line test.qtpl:134
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:134
+//line test.qtpl:134
 	b.WriteHead(qb422016)
-	//line test.qtpl:134
+//line test.qtpl:134
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:134
+//line test.qtpl:134
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:134
+//line test.qtpl:134
 	return qs422016
 //line test.qtpl:134
 }
 
 //line test.qtpl:135
 func (b *ContactsPage) StreamBody(qw422016 *qt422016.Writer, title string) {
-	//line test.qtpl:135
+//line test.qtpl:135
 	qw422016.N().S(`Put here contact info`)
 //line test.qtpl:135
 }
 
 //line test.qtpl:135
 func (b *ContactsPage) WriteBody(qq422016 qtio422016.Writer, title string) {
-	//line test.qtpl:135
+//line test.qtpl:135
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:135
+//line test.qtpl:135
 	b.StreamBody(qw422016, title)
-	//line test.qtpl:135
+//line test.qtpl:135
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:135
 }
 
 //line test.qtpl:135
 func (b *ContactsPage) Body(title string) string {
-	//line test.qtpl:135
+//line test.qtpl:135
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:135
+//line test.qtpl:135
 	b.WriteBody(qb422016, title)
-	//line test.qtpl:135
+//line test.qtpl:135
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:135
+//line test.qtpl:135
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:135
+//line test.qtpl:135
 	return qs422016
 //line test.qtpl:135
 }
@@ -748,45 +748,45 @@ type Homepage struct{}
 
 //line test.qtpl:139
 func (h *Homepage) StreamHead(qw422016 *qt422016.Writer) {
-	//line test.qtpl:139
+//line test.qtpl:139
 	qw422016.N().S(`<title>Homepage</title>`)
 //line test.qtpl:139
 }
 
 //line test.qtpl:139
 func (h *Homepage) WriteHead(qq422016 qtio422016.Writer) {
-	//line test.qtpl:139
+//line test.qtpl:139
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:139
+//line test.qtpl:139
 	h.StreamHead(qw422016)
-	//line test.qtpl:139
+//line test.qtpl:139
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:139
 }
 
 //line test.qtpl:139
 func (h *Homepage) Head() string {
-	//line test.qtpl:139
+//line test.qtpl:139
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:139
+//line test.qtpl:139
 	h.WriteHead(qb422016)
-	//line test.qtpl:139
+//line test.qtpl:139
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:139
+//line test.qtpl:139
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:139
+//line test.qtpl:139
 	return qs422016
 //line test.qtpl:139
 }
 
 //line test.qtpl:140
 func (h *Homepage) StreamBody(qw422016 *qt422016.Writer, title string) {
-	//line test.qtpl:140
+//line test.qtpl:140
 	qw422016.N().S(`
 	Title: `)
-	//line test.qtpl:141
+//line test.qtpl:141
 	qw422016.N().S(title)
-	//line test.qtpl:141
+//line test.qtpl:141
 	qw422016.N().S(`
 	Homepage body
 `)
@@ -795,26 +795,26 @@ func (h *Homepage) StreamBody(qw422016 *qt422016.Writer, title string) {
 
 //line test.qtpl:143
 func (h *Homepage) WriteBody(qq422016 qtio422016.Writer, title string) {
-	//line test.qtpl:143
+//line test.qtpl:143
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:143
+//line test.qtpl:143
 	h.StreamBody(qw422016, title)
-	//line test.qtpl:143
+//line test.qtpl:143
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:143
 }
 
 //line test.qtpl:143
 func (h *Homepage) Body(title string) string {
-	//line test.qtpl:143
+//line test.qtpl:143
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:143
+//line test.qtpl:143
 	h.WriteBody(qb422016, title)
-	//line test.qtpl:143
+//line test.qtpl:143
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:143
+//line test.qtpl:143
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:143
+//line test.qtpl:143
 	return qs422016
 //line test.qtpl:143
 }
@@ -825,31 +825,31 @@ func (h *Homepage) Body(title string) string {
 
 //line test.qtpl:153
 func StreamVariadic(qw422016 *qt422016.Writer, a int, b ...string) {
-	//line test.qtpl:153
+//line test.qtpl:153
 	qw422016.N().S(`
 	a = `)
-	//line test.qtpl:154
+//line test.qtpl:154
 	qw422016.N().D(a)
-	//line test.qtpl:154
+//line test.qtpl:154
 	qw422016.N().S(`
 	`)
-	//line test.qtpl:155
+//line test.qtpl:155
 	for i, s := range b {
-		//line test.qtpl:155
+//line test.qtpl:155
 		qw422016.N().S(`
 		`)
-		//line test.qtpl:156
+//line test.qtpl:156
 		qw422016.N().D(i)
-		//line test.qtpl:156
+//line test.qtpl:156
 		qw422016.N().S(`: `)
-		//line test.qtpl:156
+//line test.qtpl:156
 		qw422016.E().S(s)
-		//line test.qtpl:156
+//line test.qtpl:156
 		qw422016.N().S(`
 	`)
-		//line test.qtpl:157
+//line test.qtpl:157
 	}
-	//line test.qtpl:157
+//line test.qtpl:157
 	qw422016.N().S(`
 `)
 //line test.qtpl:158
@@ -857,26 +857,26 @@ func StreamVariadic(qw422016 *qt422016.Writer, a int, b ...string) {
 
 //line test.qtpl:158
 func WriteVariadic(qq422016 qtio422016.Writer, a int, b ...string) {
-	//line test.qtpl:158
+//line test.qtpl:158
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line test.qtpl:158
+//line test.qtpl:158
 	StreamVariadic(qw422016, a, b...)
-	//line test.qtpl:158
+//line test.qtpl:158
 	qt422016.ReleaseWriter(qw422016)
 //line test.qtpl:158
 }
 
 //line test.qtpl:158
 func Variadic(a int, b ...string) string {
-	//line test.qtpl:158
+//line test.qtpl:158
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line test.qtpl:158
+//line test.qtpl:158
 	WriteVariadic(qb422016, a, b...)
-	//line test.qtpl:158
+//line test.qtpl:158
 	qs422016 := string(qb422016.B)
-	//line test.qtpl:158
+//line test.qtpl:158
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line test.qtpl:158
+//line test.qtpl:158
 	return qs422016
 //line test.qtpl:158
 }
