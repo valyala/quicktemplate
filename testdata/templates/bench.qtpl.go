@@ -26,39 +26,39 @@ type BenchRow struct {
 
 //line testdata/templates/bench.qtpl:11
 func StreamBenchPage(qw422016 *qt422016.Writer, rows []BenchRow) {
-	//line testdata/templates/bench.qtpl:11
+//line testdata/templates/bench.qtpl:11
 	qw422016.N().S(`<html>
 	<head><title>test</title></head>
 	<body>
 		<ul>
 		`)
-	//line testdata/templates/bench.qtpl:15
+//line testdata/templates/bench.qtpl:15
 	for _, row := range rows {
-		//line testdata/templates/bench.qtpl:15
+//line testdata/templates/bench.qtpl:15
 		qw422016.N().S(`
 			`)
-		//line testdata/templates/bench.qtpl:16
+//line testdata/templates/bench.qtpl:16
 		if row.Print {
-			//line testdata/templates/bench.qtpl:16
+//line testdata/templates/bench.qtpl:16
 			qw422016.N().S(`
 				<li>ID=`)
-			//line testdata/templates/bench.qtpl:17
+//line testdata/templates/bench.qtpl:17
 			qw422016.N().D(row.ID)
-			//line testdata/templates/bench.qtpl:17
+//line testdata/templates/bench.qtpl:17
 			qw422016.N().S(`, Message=`)
-			//line testdata/templates/bench.qtpl:17
+//line testdata/templates/bench.qtpl:17
 			qw422016.E().S(row.Message)
-			//line testdata/templates/bench.qtpl:17
+//line testdata/templates/bench.qtpl:17
 			qw422016.N().S(`</li>
 			`)
-			//line testdata/templates/bench.qtpl:18
+//line testdata/templates/bench.qtpl:18
 		}
-		//line testdata/templates/bench.qtpl:18
+//line testdata/templates/bench.qtpl:18
 		qw422016.N().S(`
 		`)
-		//line testdata/templates/bench.qtpl:19
+//line testdata/templates/bench.qtpl:19
 	}
-	//line testdata/templates/bench.qtpl:19
+//line testdata/templates/bench.qtpl:19
 	qw422016.N().S(`
 		</ul>
 	</body>
@@ -69,26 +69,26 @@ func StreamBenchPage(qw422016 *qt422016.Writer, rows []BenchRow) {
 
 //line testdata/templates/bench.qtpl:23
 func WriteBenchPage(qq422016 qtio422016.Writer, rows []BenchRow) {
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	StreamBenchPage(qw422016, rows)
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	qt422016.ReleaseWriter(qw422016)
 //line testdata/templates/bench.qtpl:23
 }
 
 //line testdata/templates/bench.qtpl:23
 func BenchPage(rows []BenchRow) string {
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	WriteBenchPage(qb422016, rows)
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	qs422016 := string(qb422016.B)
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line testdata/templates/bench.qtpl:23
+//line testdata/templates/bench.qtpl:23
 	return qs422016
 //line testdata/templates/bench.qtpl:23
 }
