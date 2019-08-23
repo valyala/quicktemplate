@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strings"
 )
 
 // token ids
@@ -70,6 +71,11 @@ type scanner struct {
 }
 
 func newScanner(r io.Reader, filePath string) *scanner {
+	// Substitute backslashes with forward slashes in filePath
+	// for the sake of consistency on different platforms (windows, linux).
+	// See https://github.com/valyala/quicktemplate/issues/62.
+	filePath = strings.Replace(filePath, "\\", "/", -1)
+
 	return &scanner{
 		r:        bufio.NewReader(r),
 		filePath: filePath,
