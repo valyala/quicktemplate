@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 )
 
@@ -67,8 +68,13 @@ type scanner struct {
 
 	collapseSpaceDepth int
 	stripSpaceDepth    int
+	stripToNewLine     bool
+	stripPrevBlank     bool
 	rewind             bool
 }
+
+var tailOfLine = regexp.MustCompile("^[[:blank:]]*\r?\n")
+var prevBlank = regexp.MustCompile("[[:blank:]]*$")
 
 func newScanner(r io.Reader, filePath string) *scanner {
 	// Substitute backslashes with forward slashes in filePath
@@ -104,6 +110,14 @@ func (s *scanner) Next() bool {
 			if len(s.t.Value) == 0 {
 				// skip empty text
 				continue
+			}
+			if s.stripPrevBlank {
+				s.t.Value = prevBlank.ReplaceAll(s.t.Value, []byte{})
+				s.stripPrevBlank = false
+			}
+			if s.stripToNewLine {
+				s.t.Value = tailOfLine.ReplaceAll(s.t.Value, []byte{})
+				s.stripToNewLine = false
 			}
 		case tagName:
 			switch string(s.t.Value) {
@@ -270,6 +284,13 @@ func (s *scanner) readText() bool {
 		s.unreadByte('{')
 		s.appendByte()
 	}
+	if s.nextByte() {
+		if s.c == '-' {
+			s.stripPrevBlank = true
+		} else {
+			s.unreadByte(s.c)
+		}
+	}
 	if s.stripSpaceDepth > 0 {
 		s.t.Value = stripSpace(s.t.Value)
 	} else if s.collapseSpaceDepth > 0 {
@@ -282,8 +303,8 @@ func (s *scanner) readTagName() bool {
 	s.skipSpace()
 	s.t.init(tagName, s.line, s.pos())
 	for {
-		if s.isSpace() || s.c == '%' {
-			if s.c == '%' {
+		if s.isSpace() || s.c == '%' || s.c == '-' {
+			if s.c == '%' || s.c == '-' {
 				s.unreadByte('~')
 			}
 			s.nextTokenID = tagContents
@@ -306,21 +327,44 @@ func (s *scanner) readTagContents() bool {
 	s.skipSpace()
 	s.t.init(tagContents, s.line, s.pos())
 	for {
-		if s.c != '%' {
+		var minus bool
+		if s.c != '-' && s.c != '%' {
 			s.appendByte()
 			if !s.nextByte() {
 				return false
 			}
 			continue
 		}
+		if s.c == '-' {
+			minus = true
+			if !s.nextByte() {
+				s.appendByte()
+				return false
+			}
+
+			if s.c != '%' {
+				s.unreadByte('-')
+				s.appendByte()
+				if !s.nextByte() {
+					return false
+				}
+				continue
+			}
+		}
 		if !s.nextByte() {
 			s.appendByte()
 			return false
 		}
 		if s.c == '}' {
+			if minus {
+				s.stripToNewLine = true
+			}
 			s.nextTokenID = text
 			s.t.Value = stripTrailingSpace(s.t.Value)
 			return true
+		}
+		if minus {
+			s.t.Value = append(s.t.Value, '-')
 		}
 		s.unreadByte('%')
 		s.appendByte()
