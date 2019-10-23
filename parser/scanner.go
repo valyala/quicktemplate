@@ -284,6 +284,8 @@ func (s *scanner) readText() bool {
 		s.unreadByte('{')
 		s.appendByte()
 	}
+	s.stripPrevBlank = false
+	s.stripToNewLine = false
 	if s.nextByte() {
 		if s.c == '-' {
 			s.stripPrevBlank = true
