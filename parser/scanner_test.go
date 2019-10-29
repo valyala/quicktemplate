@@ -34,21 +34,21 @@ func TestScannerEndTagWithMinus(t *testing.T) {
 			{ID: tagName, Value: "aa="},
 			{ID: tagContents, Value: "-%"},
 		})
-	testScannerSuccess(t, "{%foo -%} awer{%aa= - %}",
+	testScannerSuccess(t, "{%foo -%} \t\r\n\tawer{%aa= - %}",
 		[]tt{
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: ""},
-			{ID: text, Value: " awer"},
+			{ID: text, Value: "\tawer"},
 			{ID: tagName, Value: "aa="},
 			{ID: tagContents, Value: "-"},
 		})
-	testScannerSuccess(t, "{%foo-%} awer{%bar- %}",
+	testScannerSuccess(t, "{%foo-%}\n  awer{%bar -%}\n",
 		[]tt{
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: ""},
-			{ID: text, Value: " awer"},
+			{ID: text, Value: "  awer"},
 			{ID: tagName, Value: "bar"},
-			{ID: tagContents, Value: "-"},
+			{ID: tagContents, Value: ""},
 		})
 	testScannerSuccess(t, "{%foo-%}{%bar%} \n {%baz%}",
 		[]tt{
@@ -63,8 +63,9 @@ func TestScannerEndTagWithMinus(t *testing.T) {
 }
 
 func TestScannerBeginTagWithMinus(t *testing.T) {
-	testScannerSuccess(t, "{%-foo%}",
+	testScannerSuccess(t, "x\n   {%-foo%}",
 		[]tt{
+			{ID: text, Value: "x\n"},
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: ""},
 		})
@@ -73,11 +74,11 @@ func TestScannerBeginTagWithMinus(t *testing.T) {
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: ""},
 		})
-	testScannerSuccess(t, "{%-foo baz aaa%} awer {%- aa= %}",
+	testScannerSuccess(t, "{%-foo baz aaa%} awer\n\t {%-aa= %}",
 		[]tt{
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: "baz aaa"},
-			{ID: text, Value: " awer"},
+			{ID: text, Value: " awer\n"},
 			{ID: tagName, Value: "aa="},
 			{ID: tagContents, Value: ""},
 		})

@@ -160,6 +160,12 @@ It should contains all the quicktemplate stuff.
 
 	{% cat "integration.qtpl" %}
 
+	Strip leading and trailing space:
+	{%- for i := 0; i < 4; i++ -%}
+	x += {%d i %}
+	{%- endfor -%}
+	end
+
 	tail of the func
 {% endfunc %}
 
@@ -187,5 +193,12 @@ type integrationPage struct {
 	S={%q p.S %}
 {% endfunc %}
 
+
+	Strip leading and trailing space:
+	x += 0
+	x += 1
+	x += 2
+	x += 3
+	end
 
 	tail of the func

@@ -104,6 +104,12 @@ It should contains all the quicktemplate stuff.
 
 	{% cat "integration.qtpl" %}
 
+	Strip leading and trailing space:
+	{%- for i := 0; i < 4; i++ -%}
+	x += {%d i %}
+	{%- endfor -%}
+	end
+
 	tail of the func
 {% endfunc %}
 
