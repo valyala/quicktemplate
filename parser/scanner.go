@@ -72,7 +72,7 @@ type scanner struct {
 	rewind             bool
 }
 
-var tailOfLine = regexp.MustCompile(`^[[:blank:]]*\r?\n`)
+var tailOfLine = regexp.MustCompile(`^[[:blank:]]*(?:\r*\n)?`)
 var prevBlank = regexp.MustCompile(`[[:blank:]]+$`)
 
 func newScanner(r io.Reader, filePath string) *scanner {

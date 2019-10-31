@@ -22,7 +22,7 @@ func TestScannerEndTagWithMinus(t *testing.T) {
 		[]tt{
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: "baz aaa"},
-			{ID: text, Value: " awer"},
+			{ID: text, Value: "awer"},
 			{ID: tagName, Value: "aa="},
 			{ID: tagContents, Value: ""},
 		})
@@ -34,13 +34,14 @@ func TestScannerEndTagWithMinus(t *testing.T) {
 			{ID: tagName, Value: "aa="},
 			{ID: tagContents, Value: "-%"},
 		})
-	testScannerSuccess(t, "{%foo -%} \t\r\n\tawer{%aa= - %}",
+	testScannerSuccess(t, "{%foo -%} \t\r\r\n\n\tawer{%aa= - %}  \nbb",
 		[]tt{
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: ""},
-			{ID: text, Value: "\tawer"},
+			{ID: text, Value: "\n\tawer"},
 			{ID: tagName, Value: "aa="},
 			{ID: tagContents, Value: "-"},
+			{ID: text, Value: "  \nbb"},
 		})
 	testScannerSuccess(t, "{%foo-%}\n  awer{%bar -%}\n",
 		[]tt{
@@ -63,10 +64,12 @@ func TestScannerEndTagWithMinus(t *testing.T) {
 }
 
 func TestScannerBeginTagWithMinus(t *testing.T) {
-	testScannerSuccess(t, "x\n   {%-foo%}",
+	testScannerSuccess(t, "x\n   {%-foo%}  {%- bar%}",
 		[]tt{
 			{ID: text, Value: "x\n"},
 			{ID: tagName, Value: "foo"},
+			{ID: tagContents, Value: ""},
+			{ID: tagName, Value: "bar"},
 			{ID: tagContents, Value: ""},
 		})
 	testScannerSuccess(t, "{%- foo%}",
@@ -88,21 +91,22 @@ func TestScannerBeginTagWithMinus(t *testing.T) {
 			{ID: tagContents, Value: "baz aaa"},
 			{ID: text, Value: " awer {- % aa= %}"},
 		})
-	testScannerSuccess(t, "{%-foo baz aaa%} awer {-{%- aa= xxx%}",
+	testScannerSuccess(t, "\n\n   {%- foo baz aaa -%} awer {-{%- aa= xxx%}",
 		[]tt{
+			{ID: text, Value: "\n\n"},
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: "baz aaa"},
-			{ID: text, Value: " awer {-"},
+			{ID: text, Value: "awer {-"},
 			{ID: tagName, Value: "aa="},
 			{ID: tagContents, Value: "xxx"},
 		})
-	testScannerSuccess(t, "{%-foo%}{%bar%} \n {%baz%}",
+	testScannerSuccess(t, "{%-foo%}{%bar%} \n {%-baz%}",
 		[]tt{
 			{ID: tagName, Value: "foo"},
 			{ID: tagContents, Value: ""},
 			{ID: tagName, Value: "bar"},
 			{ID: tagContents, Value: ""},
-			{ID: text, Value: " \n "},
+			{ID: text, Value: " \n"},
 			{ID: tagName, Value: "baz"},
 			{ID: tagContents, Value: ""},
 		})

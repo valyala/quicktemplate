@@ -106,7 +106,7 @@ It should contains all the quicktemplate stuff.
 
 	Strip leading and trailing space:
 	{%- for i := 0; i < 4; i++ -%}
-	x += {%d i %}
+	x += {%d i -%} + {%-d i+1 %}
 	{%- endfor -%}
 	end
 

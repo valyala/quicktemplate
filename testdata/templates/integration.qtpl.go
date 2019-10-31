@@ -553,7 +553,7 @@ It should contains all the quicktemplate stuff.
 
 	Strip leading and trailing space:
 	{%- for i := 0; i < 4; i++ -%}
-	x += {%d i %}
+	x += {%d i -%} + {%-d i+1 %}
 	{%- endfor -%}
 	end
 
@@ -595,6 +595,10 @@ type integrationPage struct {
 		qw422016.N().S(`	x += `)
 //line testdata/templates/integration.qtpl:109
 		qw422016.N().D(i)
+//line testdata/templates/integration.qtpl:109
+		qw422016.N().S(`+`)
+//line testdata/templates/integration.qtpl:109
+		qw422016.N().D(i + 1)
 //line testdata/templates/integration.qtpl:109
 		qw422016.N().S(`
 `)

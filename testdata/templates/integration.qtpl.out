@@ -162,7 +162,7 @@ It should contains all the quicktemplate stuff.
 
 	Strip leading and trailing space:
 	{%- for i := 0; i < 4; i++ -%}
-	x += {%d i %}
+	x += {%d i -%} + {%-d i+1 %}
 	{%- endfor -%}
 	end
 
@@ -195,10 +195,10 @@ type integrationPage struct {
 
 
 	Strip leading and trailing space:
-	x += 0
-	x += 1
-	x += 2
-	x += 3
+	x += 0+1
+	x += 1+2
+	x += 2+3
+	x += 3+4
 	end
 
 	tail of the func
