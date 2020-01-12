@@ -13,14 +13,14 @@ import (
 )
 
 type parser struct {
-	s               *scanner
-	w               io.Writer
-	packageName     string
-	lineComments    bool
-	prefix          string
-	forDepth        int
-	switchDepth     int
-	skipOutputDepth int
+	s                *scanner
+	w                io.Writer
+	packageName      string
+	skipLineComments bool
+	prefix           string
+	forDepth         int
+	switchDepth      int
+	skipOutputDepth  int
 
 	importsUseEmitted  bool
 	packageNameEmitted bool
@@ -30,20 +30,20 @@ type parser struct {
 // the supplied writer. Uses filename as the source file for line comments, and
 // pkg as the Go package name.
 func Parse(w io.Writer, r io.Reader, filename, pkg string) error {
-	return parse(w, r, filename, pkg, true)
+	return parse(w, r, filename, pkg, false)
 }
 
 // ParseNoLineComments is the same as Parse, but does not write line comments.
 func ParseNoLineComments(w io.Writer, r io.Reader, filename, pkg string) error {
-	return parse(w, r, filename, pkg, false)
+	return parse(w, r, filename, pkg, true)
 }
 
-func parse(w io.Writer, r io.Reader, filename, pkg string, lineComments bool) error {
+func parse(w io.Writer, r io.Reader, filename, pkg string, skipLineComments bool) error {
 	p := &parser{
-		s:            newScanner(r, filename),
-		w:            w,
-		packageName:  pkg,
-		lineComments: lineComments,
+		s:                newScanner(r, filename),
+		w:                w,
+		packageName:      pkg,
+		skipLineComments: skipLineComments,
 	}
 	return p.parseTemplate()
 }
@@ -812,7 +812,7 @@ func (p *parser) Printf(format string, args ...interface{}) {
 		return
 	}
 	w := p.w
-	if p.lineComments {
+	if !p.skipLineComments {
 		// line comments are required to start at the beginning of the line
 		p.s.WriteLineComment(w)
 	}
