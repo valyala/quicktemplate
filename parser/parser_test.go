@@ -606,3 +606,15 @@ func TestParseFile(t *testing.T) {
 		t.Fatalf("unexpected code:\n%q\nexpected:\n%q", code, expectedCode)
 	}
 }
+
+func TestParseNoLineComments(t *testing.T) {
+	const str = "foobar\nbaz"
+	r := bytes.NewBufferString(str)
+	w := &bytes.Buffer{}
+	if err := ParseNoLineComments(w, r, "qtc-test.qtpl", "memory"); err != nil {
+		t.Fatalf("unexpected error when parsing %q: %s", str, err)
+	}
+	if bytes.Contains(w.Bytes(), []byte("//line")) {
+		t.Fatal("unexpected line comment")
+	}
+}
