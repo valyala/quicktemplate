@@ -16,6 +16,7 @@ type parser struct {
 	s               *scanner
 	w               io.Writer
 	packageName     string
+	lineComments    bool
 	prefix          string
 	forDepth        int
 	switchDepth     int
@@ -29,10 +30,20 @@ type parser struct {
 // the supplied writer. Uses filename as the source file for line comments, and
 // pkg as the Go package name.
 func Parse(w io.Writer, r io.Reader, filename, pkg string) error {
+	return parse(w, r, filename, pkg, true)
+}
+
+// ParseNoLineComments is the same as Parse, but does not write line comments.
+func ParseNoLineComments(w io.Writer, r io.Reader, filename, pkg string) error {
+	return parse(w, r, filename, pkg, false)
+}
+
+func parse(w io.Writer, r io.Reader, filename, pkg string, lineComments bool) error {
 	p := &parser{
-		s:           newScanner(r, filename),
-		w:           w,
-		packageName: pkg,
+		s:            newScanner(r, filename),
+		w:            w,
+		packageName:  pkg,
+		lineComments: lineComments,
 	}
 	return p.parseTemplate()
 }
@@ -801,8 +812,10 @@ func (p *parser) Printf(format string, args ...interface{}) {
 		return
 	}
 	w := p.w
-	// line comments are required to start at the beginning of the line
-	p.s.WriteLineComment(w)
+	if p.lineComments {
+		// line comments are required to start at the beginning of the line
+		p.s.WriteLineComment(w)
+	}
 	fmt.Fprintf(w, "%s", p.prefix)
 	fmt.Fprintf(w, format, args...)
 	fmt.Fprintf(w, "\n")
