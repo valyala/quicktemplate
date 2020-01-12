@@ -25,7 +25,8 @@ var (
 	file = flag.String("file", "", "Path to template file to compile.\n"+
 		"Flags -dir and -ext are ignored if file is set.\n"+
 		"The compiled file will be placed near the original file with .go extension added.")
-	ext = flag.String("ext", "qtpl", "Only files with this extension are compiled")
+	ext              = flag.String("ext", "qtpl", "Only files with this extension are compiled")
+	skipLineComments = flag.Bool("skipLineComments", false, "Don't write line comments")
 )
 
 var logger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
@@ -127,9 +128,16 @@ func compileFile(infile string) {
 	if err != nil {
 		logger.Fatalf("cannot determine package name for %q: %s", infile, err)
 	}
-	if err = parser.Parse(outf, inf, infile, packageName); err != nil {
+
+	parseFunc := parser.Parse
+	if *skipLineComments {
+		parseFunc = parser.ParseNoLineComments
+	}
+
+	if err = parseFunc(outf, inf, infile, packageName); err != nil {
 		logger.Fatalf("error when parsing file %q: %s", infile, err)
 	}
+
 	if err = outf.Close(); err != nil {
 		logger.Fatalf("error when closing file %q: %s", tmpfile, err)
 	}
