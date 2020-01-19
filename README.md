@@ -83,6 +83,15 @@ go get -u github.com/valyala/quicktemplate
 go get -u github.com/valyala/quicktemplate/qtc
 ```
 
+If you using `go generate`, you just need put following into your `main.go`
+
+Important: please specify your own folder (-dir) to generate template file
+
+```
+//go:generate go get -u github.com/valyala/quicktemplate/qtc
+//go:generate qtc -dir=app/views  
+```
+
 Let's start with a minimal template example:
 
 ```qtpl
