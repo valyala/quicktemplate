@@ -32,6 +32,7 @@ Inspired by the [Mako templates](http://www.makotemplates.org/) philosophy.
     are compiled into a single binary.
     Take a look at [fasttemplate](https://github.com/valyala/fasttemplate)
     if you need a fast template engine for simple dynamically updated templates.
+    [There are ways](https://www.reddit.com/r/golang/comments/f290ja/hot_reloading_with_quicktemplates_sqlc_and/) to dynamically update the templates during development.
 
 # Performance comparison with html/template
 
