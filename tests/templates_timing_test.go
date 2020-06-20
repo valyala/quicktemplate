@@ -6,12 +6,14 @@ import (
 	"html/template"
 	"log"
 	"testing"
+	texttemplate "text/template"
 
 	"github.com/valyala/quicktemplate"
 	"github.com/valyala/quicktemplate/testdata/templates"
 )
 
 var tpl = template.Must(template.ParseFiles("../testdata/templates/bench.tpl"))
+var textTpl = texttemplate.Must(texttemplate.ParseFiles("../testdata/templates/bench.tpl"))
 
 func init() {
 	// make sure that both template engines generate the same result
@@ -72,6 +74,32 @@ func benchmarkHTMLTemplate(b *testing.B, rowsCount int) {
 		bb := quicktemplate.AcquireByteBuffer()
 		for pb.Next() {
 			if err := tpl.Execute(bb, rows); err != nil {
+				b.Fatalf("unexpected error: %s", err)
+			}
+			bb.Reset()
+		}
+		quicktemplate.ReleaseByteBuffer(bb)
+	})
+}
+
+func BenchmarkTextTemplate1(b *testing.B) {
+	benchmarkTextTemplate(b, 1)
+}
+
+func BenchmarkTextTemplate10(b *testing.B) {
+	benchmarkTextTemplate(b, 10)
+}
+
+func BenchmarkTextTemplate100(b *testing.B) {
+	benchmarkTextTemplate(b, 100)
+}
+
+func benchmarkTextTemplate(b *testing.B, rowsCount int) {
+	rows := getBenchRows(rowsCount)
+	b.RunParallel(func(pb *testing.PB) {
+		bb := quicktemplate.AcquireByteBuffer()
+		for pb.Next() {
+			if err := textTpl.Execute(bb, rows); err != nil {
 				b.Fatalf("unexpected error: %s", err)
 			}
 			bb.Reset()
