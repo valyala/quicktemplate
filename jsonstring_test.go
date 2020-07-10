@@ -6,23 +6,24 @@ import (
 	"testing"
 )
 
-func TestWriteJSONString(t *testing.T) {
-	testWriteJSONString(t, ``)
-	testWriteJSONString(t, `f`)
-	testWriteJSONString(t, `"`)
-	testWriteJSONString(t, `<`)
-	testWriteJSONString(t, "\x00\n\r\t\b\f"+`"\`)
-	testWriteJSONString(t, `"foobar`)
-	testWriteJSONString(t, `foobar"`)
-	testWriteJSONString(t, `foo "bar"
+func TestAppendJSONString(t *testing.T) {
+	testAppendJSONString(t, ``)
+	testAppendJSONString(t, `f`)
+	testAppendJSONString(t, `"`)
+	testAppendJSONString(t, `<`)
+	testAppendJSONString(t, "\x00\n\r\t\b\f"+`"\`)
+	testAppendJSONString(t, `"foobar`)
+	testAppendJSONString(t, `foobar"`)
+	testAppendJSONString(t, `foo "bar"
 		baz`)
-	testWriteJSONString(t, `this is a "тест"`)
-	testWriteJSONString(t, `привет test ыва`)
+	testAppendJSONString(t, `this is a "тест"`)
+	testAppendJSONString(t, `привет test ыва`)
 
-	testWriteJSONString(t, `</script><script>alert('evil')</script>`)
+	testAppendJSONString(t, `</script><script>alert('evil')</script>`)
+	testAppendJSONString(t, "\u001b")
 }
 
-func testWriteJSONString(t *testing.T, s string) {
+func testAppendJSONString(t *testing.T, s string) {
 	expectedResult, err := json.Marshal(s)
 	if err != nil {
 		t.Fatalf("unexpected error when encoding string %q: %s", s, err)
@@ -30,7 +31,7 @@ func testWriteJSONString(t *testing.T, s string) {
 	expectedResult = expectedResult[1 : len(expectedResult)-1]
 
 	bb := AcquireByteBuffer()
-	writeJSONString(bb, s)
+	bb.B = appendJSONString(bb.B[:0], s, false)
 	result := string(bb.B)
 	ReleaseByteBuffer(bb)
 

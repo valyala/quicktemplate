@@ -50,7 +50,7 @@ func TestWriter(t *testing.T) {
 	expectedS := "<a></a>123'\"foo\"ds1.23%D0%B0%D0%B1%D0%B2{}aaa\"asadf\"asdabc" +
 		"&lt;a&gt;&lt;/a&gt;321&#39;&quot;foo&quot;ds1.23%D0%B0%D0%B1%D0%B2{}aaa&quot;asadf&quot;asdabc"
 	if string(bb.B) != expectedS {
-		t.Fatalf("unexpected output: %q. Expecting %q", bb.B, expectedS)
+		t.Fatalf("unexpected output:\n%q\nExpecting\n%q", bb.B, expectedS)
 	}
 
 	ReleaseByteBuffer(bb)
@@ -198,7 +198,7 @@ func testQWriter(t *testing.T, f func(wn, we *QWriter) (expectedS string)) {
 	ReleaseWriter(qw)
 
 	if string(bb.B) != expectedS {
-		t.Fatalf("unexpected output: %q. Expecting %q", bb.B, expectedS)
+		t.Fatalf("unexpected output:\n%q\nExpecting\n%q", bb.B, expectedS)
 	}
 
 	ReleaseByteBuffer(bb)
