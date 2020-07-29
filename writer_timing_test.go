@@ -146,7 +146,7 @@ func BenchmarkQWriterFfloat(b *testing.B) {
 		for pb.Next() {
 			w.F(f)
 			bb.Reset()
-			f += 1
+			f++
 		}
 		ReleaseByteBuffer(bb)
 	})
@@ -161,7 +161,7 @@ func BenchmarkQWriterFint(b *testing.B) {
 		for pb.Next() {
 			w.F(f)
 			bb.Reset()
-			f += 1
+			f++
 		}
 		ReleaseByteBuffer(bb)
 	})
