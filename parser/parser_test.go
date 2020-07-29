@@ -173,6 +173,10 @@ func TestParseSwitchCaseSuccess(t *testing.T) {
 	// switch with break
 	testParseSuccess(t, "{%func a()%}{%switch n%}{%case 1%}aaa{%break%}ignore{%endswitch%}{%endfunc%}")
 
+	// switch on a type
+	// See https://github.com/valyala/quicktemplate/issues/77
+	testParseSuccess(t, "{%func a()%}{%switch a.(type) %}{% case []string %}aaa{%case int%}bbb{%endswitch%}{%endfunc%}")
+
 	// complex switch
 	testParseSuccess(t, `{%func f()%}{% for %}
 		{%switch foo() %}

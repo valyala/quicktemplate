@@ -291,14 +291,14 @@ func (p *parser) parseDefault() error {
 	return fmt.Errorf("cannot find end of %q at %s", stmtStr, s.Context())
 }
 
-func (p *parser) parseCase() error {
+func (p *parser) parseCase(switchValue string) error {
 	s := p.s
 	t, err := expectTagContents(s)
 	if err != nil {
 		return err
 	}
 	caseStr := "case " + string(t.Value)
-	if err = validateCaseStmt(t.Value); err != nil {
+	if err = validateCaseStmt(switchValue, t.Value); err != nil {
 		return fmt.Errorf("invalid statement %q at %s: %s", caseStr, s.Context(), err)
 	}
 	p.Printf("case %s:", t.Value)
@@ -358,6 +358,7 @@ func (p *parser) parseSwitch() error {
 		return fmt.Errorf("invalid statement %q at %s: %s", switchStr, s.Context(), err)
 	}
 	p.Printf("switch %s {", t.Value)
+	switchValue := string(t.Value)
 	caseNum := 0
 	defaultFound := false
 	p.switchDepth++
@@ -387,7 +388,7 @@ func (p *parser) parseSwitch() error {
 				return nil
 			case "case":
 				caseNum++
-				if err = p.parseCase(); err != nil {
+				if err = p.parseCase(switchValue); err != nil {
 					return err
 				}
 			case "default":
@@ -872,8 +873,8 @@ func validateSwitchStmt(stmt []byte) error {
 	return err
 }
 
-func validateCaseStmt(stmt []byte) error {
-	exprStr := fmt.Sprintf("func () { switch {case %s:} }", stmt)
+func validateCaseStmt(switchValue string, stmt []byte) error {
+	exprStr := fmt.Sprintf("func () { switch %s {case %s:} }", switchValue, stmt)
 	_, err := goparser.ParseExpr(exprStr)
 	return err
 }
