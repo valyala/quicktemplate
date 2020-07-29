@@ -21,6 +21,7 @@ func TestWriter(t *testing.T) {
 
 	wn.S("<a></a>")
 	wn.D(123)
+	we.DUL(18446744073709551615)
 	wn.Z([]byte("'"))
 	wn.Q("foo")
 	wn.J("ds")
@@ -34,6 +35,7 @@ func TestWriter(t *testing.T) {
 
 	we.S("<a></a>")
 	we.D(321)
+	we.DUL(18446744073709551615)
 	we.Z([]byte("'"))
 	we.Q("foo")
 	we.J("ds")
@@ -47,8 +49,8 @@ func TestWriter(t *testing.T) {
 
 	ReleaseWriter(qw)
 
-	expectedS := "<a></a>123'\"foo\"ds1.23%D0%B0%D0%B1%D0%B2{}aaa\"asadf\"asdabc" +
-		"&lt;a&gt;&lt;/a&gt;321&#39;&quot;foo&quot;ds1.23%D0%B0%D0%B1%D0%B2{}aaa&quot;asadf&quot;asdabc"
+	expectedS := "<a></a>12318446744073709551615'\"foo\"ds1.23%D0%B0%D0%B1%D0%B2{}aaa\"asadf\"asdabc" +
+		"&lt;a&gt;&lt;/a&gt;32118446744073709551615&#39;&quot;foo&quot;ds1.23%D0%B0%D0%B1%D0%B2{}aaa&quot;asadf&quot;asdabc"
 	if string(bb.B) != expectedS {
 		t.Fatalf("unexpected output:\n%q\nExpecting\n%q", bb.B, expectedS)
 	}

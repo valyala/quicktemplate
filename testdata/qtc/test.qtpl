@@ -86,7 +86,7 @@ Now define private printArgs, which is called in Foo via {%= %} tag
 		{% for %}And this: {% break %} {% return %}{% endfor %}
 	{% endif %}
 	<li>
-		a[{%d i %}] = {S: {%q a.S %}, SS: {%qz []byte(a.S) %}, N: {%dl int64(a.N) %}}<br>
+		a[{%d i %}] = {S: {%q a.S %}, SS: {%qz []byte(a.S) %}, N: {%dl int64(a.N) %}, NN: {%dul uint64(a.N) %}}<br>
 		{%s a.S %}, {%z []byte(a.S) %}, {%sz []byte(a.S) %}
 		{%f 1.234 %}, {%f.1 1.234 %}, {% f.2= 1.234 %}
 		alert("foo {%j "bar\naaa" %} baz {%jz []byte("aaa") %}")<br/>

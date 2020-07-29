@@ -489,8 +489,8 @@ func (p *parser) parseIf() error {
 func (p *parser) tryParseCommonTags(tagBytes []byte) (bool, error) {
 	tagNameStr, prec := splitTagNamePrec(string(tagBytes))
 	switch tagNameStr {
-	case "s", "v", "d", "dl", "f", "q", "z", "j", "u",
-		"s=", "v=", "d=", "dl=", "f=", "q=", "z=", "j=", "u=",
+	case "s", "v", "d", "dl", "dul", "f", "q", "z", "j", "u",
+		"s=", "v=", "d=", "dl=", "dul=", "f=", "q=", "z=", "j=", "u=",
 		"sz", "qz", "jz", "uz",
 		"sz=", "qz=", "jz=", "uz=":
 		if err := p.parseOutputTag(tagNameStr, prec); err != nil {
