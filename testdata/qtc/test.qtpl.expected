@@ -497,6 +497,10 @@ func streamprintArgs(qw422016 *qt422016.Writer, i int, a *FooArgs) {
 //line test.qtpl:89
 	qw422016.N().DL(int64(a.N))
 //line test.qtpl:89
+	qw422016.N().S(`, NN: `)
+//line test.qtpl:89
+	qw422016.N().DUL(uint64(a.N))
+//line test.qtpl:89
 	qw422016.N().S(`}<br>
 		`)
 //line test.qtpl:90
