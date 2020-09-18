@@ -585,6 +585,22 @@ func (h *RequestHeader) DisableNormalizing() {
 	h.disableNormalizing = true
 }
 
+// EnableNormalizing enables header names' normalization.
+//
+// Header names are normalized by uppercasing the first letter and
+// all the first letters following dashes, while lowercasing all
+// the other letters.
+// Examples:
+//
+//     * CONNECTION -> Connection
+//     * conteNT-tYPE -> Content-Type
+//     * foo-bar-baz -> Foo-Bar-Baz
+//
+// This is enabled by default unless disabled using DisableNormalizing()
+func (h *RequestHeader) EnableNormalizing() {
+	h.disableNormalizing = false
+}
+
 // DisableNormalizing disables header names' normalization.
 //
 // By default all the header names are normalized by uppercasing
@@ -601,10 +617,31 @@ func (h *ResponseHeader) DisableNormalizing() {
 	h.disableNormalizing = true
 }
 
+// EnableNormalizing enables header names' normalization.
+//
+// Header names are normalized by uppercasing the first letter and
+// all the first letters following dashes, while lowercasing all
+// the other letters.
+// Examples:
+//
+//     * CONNECTION -> Connection
+//     * conteNT-tYPE -> Content-Type
+//     * foo-bar-baz -> Foo-Bar-Baz
+//
+// This is enabled by default unless disabled using DisableNormalizing()
+func (h *ResponseHeader) EnableNormalizing() {
+	h.disableNormalizing = false
+}
+
+// SetNoDefaultContentType allows you to control if a default Content-Type header will be set (false) or not (true).
+func (h *ResponseHeader) SetNoDefaultContentType(noDefaultContentType bool) {
+	h.noDefaultContentType = noDefaultContentType
+}
+
 // Reset clears response header.
 func (h *ResponseHeader) Reset() {
 	h.disableNormalizing = false
-	h.noDefaultContentType = false
+	h.SetNoDefaultContentType(false)
 	h.noDefaultDate = false
 	h.resetSkipNormalize()
 }
