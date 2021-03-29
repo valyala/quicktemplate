@@ -29,7 +29,10 @@ var (
 	skipLineComments = flag.Bool("skipLineComments", false, "Don't write line comments")
 )
 
-var logger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
+var (
+	errorLogger = log.New(os.Stderr, "qtc: ", log.LstdFlags)
+	infoLogger = log.New(os.Stdout, "qtc: ", log.LstdFlags)
+)
 
 var filesCompiled int
 
@@ -42,7 +45,7 @@ func main() {
 	}
 
 	if len(*ext) == 0 {
-		logger.Fatalf("ext cannot be empty")
+		errorLogger.Fatalf("ext cannot be empty")
 	}
 	if len(*dir) == 0 {
 		*dir = "."
@@ -51,18 +54,18 @@ func main() {
 		*ext = "." + *ext
 	}
 
-	logger.Printf("Compiling *%s template files in directory %q", *ext, *dir)
+	infoLogger.Printf("Compiling *%s template files in directory %q", *ext, *dir)
 	compileDir(*dir)
-	logger.Printf("Total files compiled: %d", filesCompiled)
+	infoLogger.Printf("Total files compiled: %d", filesCompiled)
 }
 
 func compileSingleFile(filename string) {
 	fi, err := os.Stat(filename)
 	if err != nil {
-		logger.Fatalf("cannot stat file %q: %s", filename, err)
+		errorLogger.Fatalf("cannot stat file %q: %s", filename, err)
 	}
 	if fi.IsDir() {
-		logger.Fatalf("cannot compile directory %q. Use -dir flag", filename)
+		errorLogger.Fatalf("cannot compile directory %q. Use -dir flag", filename)
 	}
 	compileFile(filename)
 }
@@ -70,20 +73,20 @@ func compileSingleFile(filename string) {
 func compileDir(path string) {
 	fi, err := os.Stat(path)
 	if err != nil {
-		logger.Fatalf("cannot compile files in %q: %s", path, err)
+		errorLogger.Fatalf("cannot compile files in %q: %s", path, err)
 	}
 	if !fi.IsDir() {
-		logger.Fatalf("cannot compile files in %q: it is not directory", path)
+		errorLogger.Fatalf("cannot compile files in %q: it is not directory", path)
 	}
 	d, err := os.Open(path)
 	if err != nil {
-		logger.Fatalf("cannot compile files in %q: %s", path, err)
+		errorLogger.Fatalf("cannot compile files in %q: %s", path, err)
 	}
 	defer d.Close()
 
 	fis, err := d.Readdir(-1)
 	if err != nil {
-		logger.Fatalf("cannot read files in %q: %s", path, err)
+		errorLogger.Fatalf("cannot read files in %q: %s", path, err)
 	}
 
 	var names []string
@@ -111,22 +114,22 @@ func compileDir(path string) {
 
 func compileFile(infile string) {
 	outfile := infile + ".go"
-	logger.Printf("Compiling %q to %q...", infile, outfile)
+	infoLogger.Printf("Compiling %q to %q...", infile, outfile)
 
 	inf, err := os.Open(infile)
 	if err != nil {
-		logger.Fatalf("cannot open file %q: %s", infile, err)
+		errorLogger.Fatalf("cannot open file %q: %s", infile, err)
 	}
 
 	tmpfile := outfile + ".tmp"
 	outf, err := os.Create(tmpfile)
 	if err != nil {
-		logger.Fatalf("cannot create file %q: %s", tmpfile, err)
+		errorLogger.Fatalf("cannot create file %q: %s", tmpfile, err)
 	}
 
 	packageName, err := getPackageName(infile)
 	if err != nil {
-		logger.Fatalf("cannot determine package name for %q: %s", infile, err)
+		errorLogger.Fatalf("cannot determine package name for %q: %s", infile, err)
 	}
 
 	parseFunc := parser.Parse
@@ -135,30 +138,30 @@ func compileFile(infile string) {
 	}
 
 	if err = parseFunc(outf, inf, infile, packageName); err != nil {
-		logger.Fatalf("error when parsing file %q: %s", infile, err)
+		errorLogger.Fatalf("error when parsing file %q: %s", infile, err)
 	}
 
 	if err = outf.Close(); err != nil {
-		logger.Fatalf("error when closing file %q: %s", tmpfile, err)
+		errorLogger.Fatalf("error when closing file %q: %s", tmpfile, err)
 	}
 	if err = inf.Close(); err != nil {
-		logger.Fatalf("error when closing file %q: %s", infile, err)
+		errorLogger.Fatalf("error when closing file %q: %s", infile, err)
 	}
 
 	// prettify the output file
 	uglyCode, err := ioutil.ReadFile(tmpfile)
 	if err != nil {
-		logger.Fatalf("cannot read file %q: %s", tmpfile, err)
+		errorLogger.Fatalf("cannot read file %q: %s", tmpfile, err)
 	}
 	prettyCode, err := format.Source(uglyCode)
 	if err != nil {
-		logger.Fatalf("error when formatting compiled code for %q: %s. See %q for details", infile, err, tmpfile)
+		errorLogger.Fatalf("error when formatting compiled code for %q: %s. See %q for details", infile, err, tmpfile)
 	}
 	if err = ioutil.WriteFile(outfile, prettyCode, 0666); err != nil {
-		logger.Fatalf("error when writing file %q: %s", outfile, err)
+		errorLogger.Fatalf("error when writing file %q: %s", outfile, err)
 	}
 	if err = os.Remove(tmpfile); err != nil {
-		logger.Fatalf("error when removing file %q: %s", tmpfile, err)
+		errorLogger.Fatalf("error when removing file %q: %s", tmpfile, err)
 	}
 
 	filesCompiled++
