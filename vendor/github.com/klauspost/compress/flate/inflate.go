@@ -9,10 +9,10 @@ package flate
 
 import (
 	"bufio"
+	"compress/flate"
 	"fmt"
 	"io"
 	"math/bits"
-	"strconv"
 	"sync"
 )
 
@@ -29,16 +29,19 @@ const (
 	debugDecode = false
 )
 
+// Value of length - 3 and extra bits.
+type lengthExtra struct {
+	length, extra uint8
+}
+
+var decCodeToLen = [32]lengthExtra{{length: 0x0, extra: 0x0}, {length: 0x1, extra: 0x0}, {length: 0x2, extra: 0x0}, {length: 0x3, extra: 0x0}, {length: 0x4, extra: 0x0}, {length: 0x5, extra: 0x0}, {length: 0x6, extra: 0x0}, {length: 0x7, extra: 0x0}, {length: 0x8, extra: 0x1}, {length: 0xa, extra: 0x1}, {length: 0xc, extra: 0x1}, {length: 0xe, extra: 0x1}, {length: 0x10, extra: 0x2}, {length: 0x14, extra: 0x2}, {length: 0x18, extra: 0x2}, {length: 0x1c, extra: 0x2}, {length: 0x20, extra: 0x3}, {length: 0x28, extra: 0x3}, {length: 0x30, extra: 0x3}, {length: 0x38, extra: 0x3}, {length: 0x40, extra: 0x4}, {length: 0x50, extra: 0x4}, {length: 0x60, extra: 0x4}, {length: 0x70, extra: 0x4}, {length: 0x80, extra: 0x5}, {length: 0xa0, extra: 0x5}, {length: 0xc0, extra: 0x5}, {length: 0xe0, extra: 0x5}, {length: 0xff, extra: 0x0}, {length: 0x0, extra: 0x0}, {length: 0x0, extra: 0x0}, {length: 0x0, extra: 0x0}}
+
 // Initialize the fixedHuffmanDecoder only once upon first use.
 var fixedOnce sync.Once
 var fixedHuffmanDecoder huffmanDecoder
 
 // A CorruptInputError reports the presence of corrupt input at a given offset.
-type CorruptInputError int64
-
-func (e CorruptInputError) Error() string {
-	return "flate: corrupt input before offset " + strconv.FormatInt(int64(e), 10)
-}
+type CorruptInputError = flate.CorruptInputError
 
 // An InternalError reports an error in the flate code itself.
 type InternalError string
@@ -48,26 +51,12 @@ func (e InternalError) Error() string { return "flate: internal error: " + strin
 // A ReadError reports an error encountered while reading input.
 //
 // Deprecated: No longer returned.
-type ReadError struct {
-	Offset int64 // byte offset where error occurred
-	Err    error // error returned by underlying Read
-}
-
-func (e *ReadError) Error() string {
-	return "flate: read error at offset " + strconv.FormatInt(e.Offset, 10) + ": " + e.Err.Error()
-}
+type ReadError = flate.ReadError
 
 // A WriteError reports an error encountered while writing output.
 //
 // Deprecated: No longer returned.
-type WriteError struct {
-	Offset int64 // byte offset where error occurred
-	Err    error // error returned by underlying Write
-}
-
-func (e *WriteError) Error() string {
-	return "flate: write error at offset " + strconv.FormatInt(e.Offset, 10) + ": " + e.Err.Error()
-}
+type WriteError = flate.WriteError
 
 // Resetter resets a ReadCloser returned by NewReader or NewReaderDict to
 // to switch to a new underlying Reader. This permits reusing a ReadCloser
