@@ -30,6 +30,10 @@ import (
 // with good compression ratio.
 //
 // See also RequestCtx.SendFileBytes.
+//
+// WARNING: do not pass any user supplied paths to this function!
+// WARNING: if path is based on user input users will be able to request
+// any file on your filesystem! Use fasthttp.FS with a sane Root instead.
 func ServeFileBytesUncompressed(ctx *RequestCtx, path []byte) {
 	ServeFileUncompressed(ctx, b2s(path))
 }
@@ -43,6 +47,10 @@ func ServeFileBytesUncompressed(ctx *RequestCtx, path []byte) {
 // with good compression ratio.
 //
 // See also RequestCtx.SendFile.
+//
+// WARNING: do not pass any user supplied paths to this function!
+// WARNING: if path is based on user input users will be able to request
+// any file on your filesystem! Use fasthttp.FS with a sane Root instead.
 func ServeFileUncompressed(ctx *RequestCtx, path string) {
 	ctx.Request.Header.DelBytes(strAcceptEncoding)
 	ServeFile(ctx, path)
@@ -62,6 +70,10 @@ func ServeFileUncompressed(ctx *RequestCtx, path string) {
 // file contents.
 //
 // See also RequestCtx.SendFileBytes.
+//
+// WARNING: do not pass any user supplied paths to this function!
+// WARNING: if path is based on user input users will be able to request
+// any file on your filesystem! Use fasthttp.FS with a sane Root instead.
 func ServeFileBytes(ctx *RequestCtx, path []byte) {
 	ServeFile(ctx, b2s(path))
 }
@@ -79,6 +91,10 @@ func ServeFileBytes(ctx *RequestCtx, path []byte) {
 // Use ServeFileUncompressed is you don't need serving compressed file contents.
 //
 // See also RequestCtx.SendFile.
+//
+// WARNING: do not pass any user supplied paths to this function!
+// WARNING: if path is based on user input users will be able to request
+// any file on your filesystem! Use fasthttp.FS with a sane Root instead.
 func ServeFile(ctx *RequestCtx, path string) {
 	rootFSOnce.Do(func() {
 		rootFSHandler = rootFS.NewRequestHandler()
@@ -524,7 +540,7 @@ func (ff *fsFile) bigFileReader() (io.Reader, error) {
 
 	f, err := os.Open(ff.f.Name())
 	if err != nil {
-		return nil, fmt.Errorf("cannot open already opened file: %s", err)
+		return nil, fmt.Errorf("cannot open already opened file: %w", err)
 	}
 	return &bigFileReader{
 		f:  f,
@@ -981,7 +997,7 @@ func (h *fsHandler) openIndexFile(ctx *RequestCtx, dirPath string, mustCompress 
 			return ff, nil
 		}
 		if !os.IsNotExist(err) {
-			return nil, fmt.Errorf("cannot open file %q: %s", indexFilePath, err)
+			return nil, fmt.Errorf("cannot open file %q: %w", indexFilePath, err)
 		}
 	}
 
@@ -1100,7 +1116,7 @@ func (h *fsHandler) compressAndOpenFSFile(filePath string, fileEncoding string) 
 	fileInfo, err := f.Stat()
 	if err != nil {
 		f.Close()
-		return nil, fmt.Errorf("cannot obtain info for file %q: %s", filePath, err)
+		return nil, fmt.Errorf("cannot obtain info for file %q: %w", filePath, err)
 	}
 
 	if fileInfo.IsDir() {
@@ -1146,7 +1162,7 @@ func (h *fsHandler) compressFileNolock(f *os.File, fileInfo os.FileInfo, filePat
 	if err != nil {
 		f.Close()
 		if !os.IsPermission(err) {
-			return nil, fmt.Errorf("cannot create temporary file %q: %s", tmpFilePath, err)
+			return nil, fmt.Errorf("cannot create temporary file %q: %w", tmpFilePath, err)
 		}
 		return nil, errNoCreatePermission
 	}
@@ -1168,14 +1184,14 @@ func (h *fsHandler) compressFileNolock(f *os.File, fileInfo os.FileInfo, filePat
 	zf.Close()
 	f.Close()
 	if err != nil {
-		return nil, fmt.Errorf("error when compressing file %q to %q: %s", filePath, tmpFilePath, err)
+		return nil, fmt.Errorf("error when compressing file %q to %q: %w", filePath, tmpFilePath, err)
 	}
 	if err = os.Chtimes(tmpFilePath, time.Now(), fileInfo.ModTime()); err != nil {
 		return nil, fmt.Errorf("cannot change modification time to %s for tmp file %q: %s",
 			fileInfo.ModTime(), tmpFilePath, err)
 	}
 	if err = os.Rename(tmpFilePath, compressedFilePath); err != nil {
-		return nil, fmt.Errorf("cannot move compressed file from %q to %q: %s", tmpFilePath, compressedFilePath, err)
+		return nil, fmt.Errorf("cannot move compressed file from %q to %q: %w", tmpFilePath, compressedFilePath, err)
 	}
 	return h.newCompressedFSFile(compressedFilePath, fileEncoding)
 }
@@ -1183,12 +1199,12 @@ func (h *fsHandler) compressFileNolock(f *os.File, fileInfo os.FileInfo, filePat
 func (h *fsHandler) newCompressedFSFile(filePath string, fileEncoding string) (*fsFile, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("cannot open compressed file %q: %s", filePath, err)
+		return nil, fmt.Errorf("cannot open compressed file %q: %w", filePath, err)
 	}
 	fileInfo, err := f.Stat()
 	if err != nil {
 		f.Close()
-		return nil, fmt.Errorf("cannot obtain info for compressed file %q: %s", filePath, err)
+		return nil, fmt.Errorf("cannot obtain info for compressed file %q: %w", filePath, err)
 	}
 	return h.newFSFile(f, fileInfo, true, fileEncoding)
 }
@@ -1210,7 +1226,7 @@ func (h *fsHandler) openFSFile(filePath string, mustCompress bool, fileEncoding 
 	fileInfo, err := f.Stat()
 	if err != nil {
 		f.Close()
-		return nil, fmt.Errorf("cannot obtain info for file %q: %s", filePath, err)
+		return nil, fmt.Errorf("cannot obtain info for file %q: %w", filePath, err)
 	}
 
 	if fileInfo.IsDir() {
@@ -1226,7 +1242,7 @@ func (h *fsHandler) openFSFile(filePath string, mustCompress bool, fileEncoding 
 		fileInfoOriginal, err := os.Stat(filePathOriginal)
 		if err != nil {
 			f.Close()
-			return nil, fmt.Errorf("cannot obtain info for original file %q: %s", filePathOriginal, err)
+			return nil, fmt.Errorf("cannot obtain info for original file %q: %w", filePathOriginal, err)
 		}
 
 		// Only re-create the compressed file if there was more than a second between the mod times.
@@ -1257,7 +1273,7 @@ func (h *fsHandler) newFSFile(f *os.File, fileInfo os.FileInfo, compressed bool,
 	if len(contentType) == 0 {
 		data, err := readFileHeader(f, compressed, fileEncoding)
 		if err != nil {
-			return nil, fmt.Errorf("cannot read header of the file %q: %s", f.Name(), err)
+			return nil, fmt.Errorf("cannot read header of the file %q: %w", f.Name(), err)
 		}
 		contentType = http.DetectContentType(data)
 	}
@@ -1370,18 +1386,10 @@ func fsModTime(t time.Time) time.Time {
 	return t.In(time.UTC).Truncate(time.Second)
 }
 
-var (
-	filesLockMap     = make(map[string]*sync.Mutex)
-	filesLockMapLock sync.Mutex
-)
+var filesLockMap sync.Map
 
 func getFileLock(absPath string) *sync.Mutex {
-	filesLockMapLock.Lock()
-	flock := filesLockMap[absPath]
-	if flock == nil {
-		flock = &sync.Mutex{}
-		filesLockMap[absPath] = flock
-	}
-	filesLockMapLock.Unlock()
-	return flock
+	v, _ := filesLockMap.LoadOrStore(absPath, &sync.Mutex{})
+	filelock := v.(*sync.Mutex)
+	return filelock
 }
