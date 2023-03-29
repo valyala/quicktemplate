@@ -125,6 +125,39 @@ func (w *QWriter) DL(n int64) {
 	}
 }
 
+// DL32 writes n to w
+func (w *QWriter) DL32(n int32) {
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = strconv.AppendInt(bb.B, int64(n), 10)
+	} else {
+		w.b = strconv.AppendInt(w.b[:0], int64(n), 10)
+		w.Write(w.b)
+	}
+}
+
+// DL16 writes n to w
+func (w *QWriter) DL16(n int16) {
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = strconv.AppendInt(bb.B, int64(n), 10)
+	} else {
+		w.b = strconv.AppendInt(w.b[:0], int64(n), 10)
+		w.Write(w.b)
+	}
+}
+
+// DL8 writes n to w
+func (w *QWriter) DL8(n int8) {
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = strconv.AppendInt(bb.B, int64(n), 10)
+	} else {
+		w.b = strconv.AppendInt(w.b[:0], int64(n), 10)
+		w.Write(w.b)
+	}
+}
+
 // DUL writes n to w
 func (w *QWriter) DUL(n uint64) {
 	bb, ok := w.w.(*ByteBuffer)
@@ -132,6 +165,39 @@ func (w *QWriter) DUL(n uint64) {
 		bb.B = strconv.AppendUint(bb.B, n, 10)
 	} else {
 		w.b = strconv.AppendUint(w.b[:0], n, 10)
+		w.Write(w.b)
+	}
+}
+
+// DUL32 writes n to w
+func (w *QWriter) DUL32(n uint32) {
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = strconv.AppendUint(bb.B, uint64(n), 10)
+	} else {
+		w.b = strconv.AppendUint(w.b[:0], uint64(n), 10)
+		w.Write(w.b)
+	}
+}
+
+// DUL16 writes n to w
+func (w *QWriter) DUL16(n uint16) {
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = strconv.AppendUint(bb.B, uint64(n), 10)
+	} else {
+		w.b = strconv.AppendUint(w.b[:0], uint64(n), 10)
+		w.Write(w.b)
+	}
+}
+
+// DUL8 writes n to w
+func (w *QWriter) DUL8(n uint8) {
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = strconv.AppendUint(bb.B, uint64(n), 10)
+	} else {
+		w.b = strconv.AppendUint(w.b[:0], uint64(n), 10)
 		w.Write(w.b)
 	}
 }
@@ -170,8 +236,6 @@ func (w *QWriter) Q(s string) {
 		w.Write(w.b)
 	}
 }
-
-var strQuote = []byte(`"`)
 
 // QZ writes quoted json-safe z to w.
 func (w *QWriter) QZ(z []byte) {

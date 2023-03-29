@@ -489,8 +489,8 @@ func (p *parser) parseIf() error {
 func (p *parser) tryParseCommonTags(tagBytes []byte) (bool, error) {
 	tagNameStr, prec := splitTagNamePrec(string(tagBytes))
 	switch tagNameStr {
-	case "s", "v", "d", "dl", "dul", "f", "q", "z", "j", "u",
-		"s=", "v=", "d=", "dl=", "dul=", "f=", "q=", "z=", "j=", "u=",
+	case "s", "v", "d", "dl", "dl32", "dl16", "dl8", "dul", "dul32", "dul16", "dul8", "f", "q", "z", "j", "u",
+		"s=", "v=", "d=", "dl=", "dl32=", "dl16=", "dl8=", "dul=", "dul31=", "dul16=", "dul8=", "f=", "q=", "z=", "j=", "u=",
 		"sz", "qz", "jz", "uz",
 		"sz=", "qz=", "jz=", "uz=":
 		if err := p.parseOutputTag(tagNameStr, prec); err != nil {
@@ -548,9 +548,7 @@ func splitTagNamePrec(tagName string) (string, int) {
 	parts := strings.Split(tagName, ".")
 	if len(parts) == 2 && parts[0] == "f" {
 		p := parts[1]
-		if strings.HasSuffix(p, "=") {
-			p = p[:len(p)-1]
-		}
+		p = strings.TrimSuffix(p, "=")
 		if len(p) == 0 {
 			return "f", 0
 		}
@@ -719,9 +717,7 @@ func (p *parser) parseOutputTag(tagNameStr string, prec int) error {
 	case "s", "v", "q", "z", "j", "sz", "qz", "jz":
 		filter = "E"
 	}
-	if strings.HasSuffix(tagNameStr, "=") {
-		tagNameStr = tagNameStr[:len(tagNameStr)-1]
-	}
+	tagNameStr = strings.TrimSuffix(tagNameStr, "=")
 	if tagNameStr == "f" && prec >= 0 {
 		p.Printf("qw%s.N().FPrec(%s, %d)", mangleSuffix, t.Value, prec)
 	} else {
