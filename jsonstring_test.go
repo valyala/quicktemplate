@@ -31,7 +31,7 @@ func testAppendJSONString(t *testing.T, s string) {
 	expectedResult = expectedResult[1 : len(expectedResult)-1]
 
 	bb := AcquireByteBuffer()
-	bb.B = appendJSONString(bb.B[:0], s, false)
+	bb.B = AppendJSONString(bb.B[:0], s, false)
 	result := string(bb.B)
 	ReleaseByteBuffer(bb)
 
