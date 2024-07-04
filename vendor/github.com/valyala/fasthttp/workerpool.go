@@ -1,6 +1,7 @@
 package fasthttp
 
 import (
+	"errors"
 	"net"
 	"runtime"
 	"strings"
@@ -46,11 +47,11 @@ type workerChan struct {
 
 func (wp *workerPool) Start() {
 	if wp.stopCh != nil {
-		panic("BUG: workerPool already started")
+		return
 	}
 	wp.stopCh = make(chan struct{})
 	stopCh := wp.stopCh
-	wp.workerChanPool.New = func() interface{} {
+	wp.workerChanPool.New = func() any {
 		return &workerChan{
 			ch: make(chan net.Conn, workerChanCap),
 		}
@@ -71,7 +72,7 @@ func (wp *workerPool) Start() {
 
 func (wp *workerPool) Stop() {
 	if wp.stopCh == nil {
-		panic("BUG: workerPool wasn't started")
+		return
 	}
 	close(wp.stopCh)
 	wp.stopCh = nil
@@ -109,9 +110,9 @@ func (wp *workerPool) clean(scratch *[]*workerChan) {
 	n := len(ready)
 
 	// Use binary-search algorithm to find out the index of the least recently worker which can be cleaned up.
-	l, r, mid := 0, n-1, 0
+	l, r := 0, n-1
 	for l <= r {
-		mid = (l + r) / 2
+		mid := (l + r) / 2
 		if criticalTime.After(wp.ready[mid].lastUseTime) {
 			l = mid + 1
 		} else {
@@ -226,8 +227,9 @@ func (wp *workerPool) workerFunc(ch *workerChan) {
 				strings.Contains(errStr, "reset by peer") ||
 				strings.Contains(errStr, "request headers: small read buffer") ||
 				strings.Contains(errStr, "unexpected EOF") ||
-				strings.Contains(errStr, "i/o timeout")) {
-				wp.Logger.Printf("error when serving connection %q<->%q: %s", c.LocalAddr(), c.RemoteAddr(), err)
+				strings.Contains(errStr, "i/o timeout") ||
+				errors.Is(err, ErrBadTrailer)) {
+				wp.Logger.Printf("error when serving connection %q<->%q: %v", c.LocalAddr(), c.RemoteAddr(), err)
 			}
 		}
 		if err == errHijacked {
@@ -236,7 +238,6 @@ func (wp *workerPool) workerFunc(ch *workerChan) {
 			_ = c.Close()
 			wp.connState(c, StateClosed)
 		}
-		c = nil
 
 		if !wp.release(ch) {
 			break

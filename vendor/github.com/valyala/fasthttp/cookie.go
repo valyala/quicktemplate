@@ -23,17 +23,17 @@ var (
 type CookieSameSite int
 
 const (
-	// CookieSameSiteDisabled removes the SameSite flag
+	// CookieSameSiteDisabled removes the SameSite flag.
 	CookieSameSiteDisabled CookieSameSite = iota
-	// CookieSameSiteDefaultMode sets the SameSite flag
+	// CookieSameSiteDefaultMode sets the SameSite flag.
 	CookieSameSiteDefaultMode
-	// CookieSameSiteLaxMode sets the SameSite flag with the "Lax" parameter
+	// CookieSameSiteLaxMode sets the SameSite flag with the "Lax" parameter.
 	CookieSameSiteLaxMode
-	// CookieSameSiteStrictMode sets the SameSite flag with the "Strict" parameter
+	// CookieSameSiteStrictMode sets the SameSite flag with the "Strict" parameter.
 	CookieSameSiteStrictMode
-	// CookieSameSiteNoneMode sets the SameSite flag with the "None" parameter
-	// see https://tools.ietf.org/html/draft-west-cookie-incrementalism-00
-	CookieSameSiteNoneMode
+	// CookieSameSiteNoneMode sets the SameSite flag with the "None" parameter.
+	// See https://tools.ietf.org/html/draft-west-cookie-incrementalism-00
+	CookieSameSiteNoneMode // third-party cookies are phasing out, use Partitioned cookies instead
 )
 
 // AcquireCookie returns an empty Cookie object from the pool.
@@ -54,7 +54,7 @@ func ReleaseCookie(c *Cookie) {
 }
 
 var cookiePool = &sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return &Cookie{}
 	},
 }
@@ -65,7 +65,7 @@ var cookiePool = &sync.Pool{
 //
 // Cookie instance MUST NOT be used from concurrently running goroutines.
 type Cookie struct {
-	noCopy noCopy //nolint:unused,structcheck
+	noCopy noCopy
 
 	key    []byte
 	value  []byte
@@ -74,9 +74,10 @@ type Cookie struct {
 	domain []byte
 	path   []byte
 
-	httpOnly bool
-	secure   bool
-	sameSite CookieSameSite
+	httpOnly    bool
+	secure      bool
+	sameSite    CookieSameSite
+	partitioned bool
 
 	bufKV argsKV
 	buf   []byte
@@ -94,6 +95,7 @@ func (c *Cookie) CopyTo(src *Cookie) {
 	c.httpOnly = src.httpOnly
 	c.secure = src.secure
 	c.sameSite = src.sameSite
+	c.partitioned = src.partitioned
 }
 
 // HTTPOnly returns true if the cookie is http only.
@@ -122,11 +124,26 @@ func (c *Cookie) SameSite() CookieSameSite {
 }
 
 // SetSameSite sets the cookie's SameSite flag to the given value.
-// set value CookieSameSiteNoneMode will set Secure to true also to avoid browser rejection
+// Set value CookieSameSiteNoneMode will set Secure to true also to avoid browser rejection.
 func (c *Cookie) SetSameSite(mode CookieSameSite) {
 	c.sameSite = mode
 	if mode == CookieSameSiteNoneMode {
 		c.SetSecure(true)
+	}
+}
+
+// Partitioned returns true if the cookie is partitioned.
+func (c *Cookie) Partitioned() bool {
+	return c.partitioned
+}
+
+// SetPartitioned sets the cookie's Partitioned flag to the given value.
+// Set value Partitioned to true will set Secure to true and Path to / also to avoid browser rejection.
+func (c *Cookie) SetPartitioned(partitioned bool) {
+	c.partitioned = partitioned
+	if partitioned {
+		c.SetSecure(true)
+		c.SetPath("/")
 	}
 }
 
@@ -149,7 +166,8 @@ func (c *Cookie) SetPathBytes(path []byte) {
 
 // Domain returns cookie domain.
 //
-// The returned domain is valid until the next Cookie modification method call.
+// The returned value is valid until the Cookie reused or released (ReleaseCookie).
+// Do not store references to the returned value. Make copies instead.
 func (c *Cookie) Domain() []byte {
 	return c.domain
 }
@@ -171,16 +189,16 @@ func (c *Cookie) MaxAge() int {
 }
 
 // SetMaxAge sets cookie expiration time based on seconds. This takes precedence
-// over any absolute expiry set on the cookie
+// over any absolute expiry set on the cookie.
 //
-// Set max age to 0 to unset
+// Set max age to 0 to unset.
 func (c *Cookie) SetMaxAge(seconds int) {
 	c.maxAge = seconds
 }
 
 // Expire returns cookie expiration time.
 //
-// CookieExpireUnlimited is returned if cookie doesn't expire
+// CookieExpireUnlimited is returned if cookie doesn't expire.
 func (c *Cookie) Expire() time.Time {
 	expire := c.expire
 	if expire.IsZero() {
@@ -201,7 +219,8 @@ func (c *Cookie) SetExpire(expire time.Time) {
 
 // Value returns cookie value.
 //
-// The returned value is valid until the next Cookie modification method call.
+// The returned value is valid until the Cookie reused or released (ReleaseCookie).
+// Do not store references to the returned value. Make copies instead.
 func (c *Cookie) Value() []byte {
 	return c.value
 }
@@ -218,7 +237,8 @@ func (c *Cookie) SetValueBytes(value []byte) {
 
 // Key returns cookie name.
 //
-// The returned value is valid until the next Cookie modification method call.
+// The returned value is valid until the Cookie reused or released (ReleaseCookie).
+// Do not store references to the returned value. Make copies instead.
 func (c *Cookie) Key() []byte {
 	return c.key
 }
@@ -244,6 +264,7 @@ func (c *Cookie) Reset() {
 	c.httpOnly = false
 	c.secure = false
 	c.sameSite = CookieSameSiteDisabled
+	c.partitioned = false
 }
 
 // AppendBytes appends cookie representation to dst and returns
@@ -301,12 +322,17 @@ func (c *Cookie) AppendBytes(dst []byte) []byte {
 		dst = append(dst, '=')
 		dst = append(dst, strCookieSameSiteNone...)
 	}
+	if c.partitioned {
+		dst = append(dst, ';', ' ')
+		dst = append(dst, strCookiePartitioned...)
+	}
 	return dst
 }
 
 // Cookie returns cookie representation.
 //
-// The returned value is valid until the next call to Cookie methods.
+// The returned value is valid until the Cookie reused or released (ReleaseCookie).
+// Do not store references to the returned value. Make copies instead.
 func (c *Cookie) Cookie() []byte {
 	c.buf = c.AppendBytes(c.buf[:0])
 	return c.buf
@@ -407,7 +433,6 @@ func (c *Cookie) ParseBytes(src []byte) error {
 					}
 				}
 			}
-
 		} else if len(kv.value) != 0 {
 			// Case insensitive switch on first char
 			switch kv.value[0] | 0x20 {
@@ -421,6 +446,10 @@ func (c *Cookie) ParseBytes(src []byte) error {
 					c.secure = true
 				} else if caseInsensitiveCompare(strCookieSameSite, kv.value) {
 					c.sameSite = CookieSameSiteDefaultMode
+				}
+			case 'p': // "partitioned"
+				if caseInsensitiveCompare(strCookiePartitioned, kv.value) {
+					c.partitioned = true
 				}
 			}
 		} // else empty or no match

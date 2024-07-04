@@ -10,41 +10,32 @@ import (
 	"io"
 	"math"
 	"net"
-	"reflect"
-	"strings"
 	"sync"
 	"time"
-	"unsafe"
-	"runtime"
 )
 
 // AppendHTMLEscape appends html-escaped s to dst and returns the extended dst.
 func AppendHTMLEscape(dst []byte, s string) []byte {
-	if strings.IndexByte(s, '<') < 0 &&
-		strings.IndexByte(s, '>') < 0 &&
-		strings.IndexByte(s, '"') < 0 &&
-		strings.IndexByte(s, '\'') < 0 {
+	var (
+		prev int
+		sub  string
+	)
 
-		// fast path - nothing to escape
-		return append(dst, s...)
-	}
-
-	// slow path
-	var prev int
-	var sub string
 	for i, n := 0, len(s); i < n; i++ {
 		sub = ""
 		switch s[i] {
+		case '&':
+			sub = "&amp;"
 		case '<':
 			sub = "&lt;"
 		case '>':
 			sub = "&gt;"
 		case '"':
-			sub = "&quot;"
+			sub = "&#34;" // "&#34;" is shorter than "&quot;".
 		case '\'':
-			sub = "&#39;"
+			sub = "&#39;" // "&#39;" is shorter than "&apos;" and apos was not in HTML until HTML5.
 		}
-		if len(sub) > 0 {
+		if sub != "" {
 			dst = append(dst, s[prev:i]...)
 			dst = append(dst, sub...)
 			prev = i + 1
@@ -82,14 +73,11 @@ func ParseIPv4(dst net.IP, ipStr []byte) (net.IP, error) {
 	if len(ipStr) == 0 {
 		return dst, errEmptyIPStr
 	}
-	if len(dst) < net.IPv4len {
+	if len(dst) < net.IPv4len || len(dst) > net.IPv4len {
 		dst = make([]byte, net.IPv4len)
 	}
 	copy(dst, net.IPv4zero)
-	dst = dst.To4()
-	if dst == nil {
-		panic("BUG: dst must not be nil")
-	}
+	dst = dst.To4() // dst is always non-nil here
 
 	b := ipStr
 	for i := 0; i < 3; i++ {
@@ -99,7 +87,7 @@ func ParseIPv4(dst net.IP, ipStr []byte) (net.IP, error) {
 		}
 		v, err := ParseUint(b[:n])
 		if err != nil {
-			return dst, fmt.Errorf("cannot parse ipStr %q: %s", ipStr, err)
+			return dst, fmt.Errorf("cannot parse ipStr %q: %w", ipStr, err)
 		}
 		if v > 255 {
 			return dst, fmt.Errorf("cannot parse ipStr %q: ip part cannot exceed 255: parsed %d", ipStr, v)
@@ -109,7 +97,7 @@ func ParseIPv4(dst net.IP, ipStr []byte) (net.IP, error) {
 	}
 	v, err := ParseUint(b)
 	if err != nil {
-		return dst, fmt.Errorf("cannot parse ipStr %q: %s", ipStr, err)
+		return dst, fmt.Errorf("cannot parse ipStr %q: %w", ipStr, err)
 	}
 	if v > 255 {
 		return dst, fmt.Errorf("cannot parse ipStr %q: ip part cannot exceed 255: parsed %d", ipStr, v)
@@ -135,6 +123,7 @@ func ParseHTTPDate(date []byte) (time.Time, error) {
 // AppendUint appends n to dst and returns the extended dst.
 func AppendUint(dst []byte, n int) []byte {
 	if n < 0 {
+		// developer sanity-check
 		panic("BUG: int must be positive")
 	}
 
@@ -211,7 +200,7 @@ func ParseUfloat(buf []byte) (float64, error) {
 	}
 	b := buf
 	var v uint64
-	var offset = 1.0
+	offset := 1.0
 	var pointFound bool
 	for i, c := range b {
 		if c < '0' || c > '9' {
@@ -241,7 +230,7 @@ func ParseUfloat(buf []byte) (float64, error) {
 				if err != nil {
 					return -1, errInvalidFloatExponent
 				}
-				return float64(v) * offset * math.Pow10(minus*int(vv)), nil
+				return float64(v) * offset * math.Pow10(minus*vv), nil
 			}
 			return -1, errUnexpectedFloatChar
 		}
@@ -259,9 +248,7 @@ var (
 )
 
 func readHexInt(r *bufio.Reader) (int, error) {
-	n := 0
-	i := 0
-	var k int
+	var k, i, n int
 	for {
 		c, err := r.ReadByte()
 		if err != nil {
@@ -292,6 +279,7 @@ var hexIntBufPool sync.Pool
 
 func writeHexInt(w *bufio.Writer, n int) error {
 	if n < 0 {
+		// developer sanity-check
 		panic("BUG: int must be positive")
 	}
 
@@ -326,32 +314,6 @@ func lowercaseBytes(b []byte) {
 	}
 }
 
-// b2s converts byte slice to a string without memory allocation.
-// See https://groups.google.com/forum/#!msg/Golang-Nuts/ENgbUzYvCuU/90yGx7GUAgAJ .
-//
-// Note it may break if string and/or slice header will change
-// in the future go versions.
-func b2s(b []byte) string {
-	/* #nosec G103 */
-	return *(*string)(unsafe.Pointer(&b))
-}
-
-// s2b converts string to a byte slice without memory allocation.
-//
-// Note it may break if string and/or slice header will change
-// in the future go versions.
-func s2b(s string) (b []byte) {
-	/* #nosec G103 */
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	/* #nosec G103 */
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh.Data = sh.Data
-	bh.Cap = sh.Len
-	bh.Len = sh.Len
-	runtime.KeepAlive(&s)
-	return b
-}
-
 // AppendUnquotedArg appends url-decoded src to dst and returns appended dst.
 //
 // dst may point to src. In this case src will be overwritten.
@@ -382,7 +344,7 @@ func appendQuotedPath(dst, src []byte) []byte {
 
 	for _, c := range src {
 		if quotedPathShouldEscapeTable[int(c)] != 0 {
-			dst = append(dst, '%', upperhex[c>>4], upperhex[c&15])
+			dst = append(dst, '%', upperhex[c>>4], upperhex[c&0xf])
 		} else {
 			dst = append(dst, c)
 		}

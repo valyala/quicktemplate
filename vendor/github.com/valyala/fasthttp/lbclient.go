@@ -25,7 +25,7 @@ type BalancingClient interface {
 //
 // It is safe calling LBClient methods from concurrently running goroutines.
 type LBClient struct {
-	noCopy noCopy //nolint:unused,structcheck
+	noCopy noCopy
 
 	// Clients must contain non-zero clients list.
 	// Incoming requests are balanced among these clients.
@@ -50,6 +50,7 @@ type LBClient struct {
 	cs []*lbClient
 
 	once sync.Once
+	mu   sync.RWMutex
 }
 
 // DefaultLBClientTimeout is the default request timeout used by LBClient
@@ -58,18 +59,18 @@ type LBClient struct {
 // The timeout may be overridden via LBClient.Timeout.
 const DefaultLBClientTimeout = time.Second
 
-// DoDeadline calls DoDeadline on the least loaded client
+// DoDeadline calls DoDeadline on the least loaded client.
 func (cc *LBClient) DoDeadline(req *Request, resp *Response, deadline time.Time) error {
 	return cc.get().DoDeadline(req, resp, deadline)
 }
 
-// DoTimeout calculates deadline and calls DoDeadline on the least loaded client
+// DoTimeout calculates deadline and calls DoDeadline on the least loaded client.
 func (cc *LBClient) DoTimeout(req *Request, resp *Response, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	return cc.get().DoDeadline(req, resp, deadline)
 }
 
-// Do calls calculates deadline using LBClient.Timeout and calls DoDeadline
+// Do calculates timeout using LBClient.Timeout and calls DoTimeout
 // on the least loaded client.
 func (cc *LBClient) Do(req *Request, resp *Response) error {
 	timeout := cc.Timeout
@@ -80,7 +81,10 @@ func (cc *LBClient) Do(req *Request, resp *Response) error {
 }
 
 func (cc *LBClient) init() {
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
 	if len(cc.Clients) == 0 {
+		// developer sanity-check
 		panic("BUG: LBClient.Clients cannot be empty")
 	}
 	for _, c := range cc.Clients {
@@ -91,9 +95,42 @@ func (cc *LBClient) init() {
 	}
 }
 
+// AddClient adds a new client to the balanced clients and
+// returns the new total number of clients.
+func (cc *LBClient) AddClient(c BalancingClient) int {
+	cc.mu.Lock()
+	cc.cs = append(cc.cs, &lbClient{
+		c:           c,
+		healthCheck: cc.HealthCheck,
+	})
+	cc.mu.Unlock()
+	return len(cc.cs)
+}
+
+// RemoveClients removes clients using the provided callback.
+// If rc returns true, the passed client will be removed.
+// Returns the new total number of clients.
+func (cc *LBClient) RemoveClients(rc func(BalancingClient) bool) int {
+	cc.mu.Lock()
+	n := 0
+	for idx, cs := range cc.cs {
+		cc.cs[idx] = nil
+		if rc(cs.c) {
+			continue
+		}
+		cc.cs[n] = cs
+		n++
+	}
+	cc.cs = cc.cs[:n]
+
+	cc.mu.Unlock()
+	return len(cc.cs)
+}
+
 func (cc *LBClient) get() *lbClient {
 	cc.once.Do(cc.init)
 
+	cc.mu.RLock()
 	cs := cc.cs
 
 	minC := cs[0]
@@ -101,13 +138,14 @@ func (cc *LBClient) get() *lbClient {
 	minT := atomic.LoadUint64(&minC.total)
 	for _, c := range cs[1:] {
 		n := c.PendingRequests()
-		t := atomic.LoadUint64(&c.total)
+		t := atomic.LoadUint64(&c.total) /* #nosec G601 */
 		if n < minN || (n == minN && t < minT) {
 			minC = c
 			minN = n
 			minT = t
 		}
 	}
+	cc.mu.RUnlock()
 	return minC
 }
 

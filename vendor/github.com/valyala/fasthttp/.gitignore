@@ -3,5 +3,7 @@ tags
 *.fasthttp.gz
 *.fasthttp.br
 .idea
+.vscode
 .DS_Store
 vendor/
+testdata/fuzz
