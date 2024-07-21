@@ -59,8 +59,8 @@ var jsonReplacer = newByteReplacer(func() ([]byte, []string) {
 }())
 
 type byteReplacer struct {
-	m   [256]byte
 	newStrings []string
+	m          [256]byte
 }
 
 func newByteReplacer(oldChars []byte, newStrings []string) *byteReplacer {
@@ -79,7 +79,7 @@ func newByteReplacer(oldChars []byte, newStrings []string) *byteReplacer {
 		m[c] = byte(i)
 	}
 	return &byteReplacer{
-		m:   m,
+		m:          m,
 		newStrings: newStrings,
 	}
 }
