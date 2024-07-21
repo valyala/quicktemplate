@@ -13,14 +13,15 @@ import (
 )
 
 type parser struct {
-	s                *scanner
-	w                io.Writer
-	packageName      string
+	w               io.Writer
+	s               *scanner
+	packageName     string
+	prefix          string
+	forDepth        int
+	switchDepth     int
+	skipOutputDepth int
+
 	skipLineComments bool
-	prefix           string
-	forDepth         int
-	switchDepth      int
-	skipOutputDepth  int
 
 	importsUseEmitted  bool
 	packageNameEmitted bool

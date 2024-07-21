@@ -31,8 +31,9 @@ func tokenIDToStr(id int) string {
 }
 
 type token struct {
-	ID    int
 	Value []byte
+
+	ID int
 
 	line int
 	pos  int
@@ -51,25 +52,29 @@ func (t *token) String() string {
 }
 
 type scanner struct {
-	r   *bufio.Reader
-	t   token
-	c   byte
 	err error
+
+	r *bufio.Reader
 
 	filePath string
 
-	line    int
 	lineStr []byte
+
+	capturedValue []byte
+
+	t token
+
+	line int
 
 	nextTokenID int
 
-	capture       bool
-	capturedValue []byte
-
 	collapseSpaceDepth int
 	stripSpaceDepth    int
-	stripToNewLine     bool
-	rewind             bool
+	c                  byte
+
+	capture        bool
+	stripToNewLine bool
+	rewind         bool
 }
 
 var tailOfLine = regexp.MustCompile(`^[[:blank:]]*(?:\r*\n)?`)

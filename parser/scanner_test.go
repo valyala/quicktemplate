@@ -323,6 +323,6 @@ func testScannerSuccess(t *testing.T, str string, expectedTokens []tt) {
 }
 
 type tt struct {
-	ID    int
 	Value string
+	ID    int
 }
