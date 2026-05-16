@@ -80,8 +80,8 @@ First of all, install the `quicktemplate` package
 and [quicktemplate compiler](https://github.com/valyala/quicktemplate/tree/master/qtc) (`qtc`):
 
 ```
-go get -u github.com/valyala/quicktemplate
-go get -u github.com/valyala/quicktemplate/qtc
+go get github.com/valyala/quicktemplate
+go install github.com/valyala/quicktemplate/qtc@latest
 ```
 
 If you using `go generate`, you just need put following into your `main.go`
@@ -89,7 +89,7 @@ If you using `go generate`, you just need put following into your `main.go`
 Important: please specify your own folder (-dir) to generate template file
 
 ```
-//go:generate go get -u github.com/valyala/quicktemplate/qtc
+//go:generate go install github.com/valyala/quicktemplate/qtc@latest
 //go:generate qtc -dir=app/views  
 ```
 
