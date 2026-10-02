@@ -30,6 +30,36 @@ func (qw *Writer) N() *QWriter {
 	return &qw.n
 }
 
+// WritePadding writes s to w with padding without html escaping.
+func (qw *Writer) WritePadding(s string, width int) {
+	qw.n.WritePadding(s, width)
+}
+
+// WritePadLeft writes s to w with left padding without html escaping.
+func (qw *Writer) WritePadLeft(s string, width int) {
+	qw.n.WritePadLeft(s, width)
+}
+
+// WritePadRight writes s to w with right padding without html escaping.
+func (qw *Writer) WritePadRight(s string, width int) {
+	qw.n.WritePadRight(s, width)
+}
+
+// WritePaddingZ writes z to w with padding without html escaping.
+func (qw *Writer) WritePaddingZ(z []byte, width int) {
+	qw.n.WritePaddingZ(z, width)
+}
+
+// WritePadLeftZ writes z to w with left padding without html escaping.
+func (qw *Writer) WritePadLeftZ(z []byte, width int) {
+	qw.n.WritePadLeftZ(z, width)
+}
+
+// WritePadRightZ writes z to w with right padding without html escaping.
+func (qw *Writer) WritePadRightZ(z []byte, width int) {
+	qw.n.WritePadRightZ(z, width)
+}
+
 // AcquireWriter returns new writer from the pool.
 //
 // Return unneeded writer to the pool by calling ReleaseWriter
@@ -217,4 +247,141 @@ func (w *QWriter) U(s string) {
 // UZ writes url-encoded z to w.
 func (w *QWriter) UZ(z []byte) {
 	w.U(unsafeBytesToStr(z))
+}
+
+var spaces = func() []byte {
+	b := make([]byte, 512)
+	for i := range b {
+		b[i] = ' '
+	}
+	return b
+}()
+
+func appendSpaces(b []byte, n int) []byte {
+	for n > len(spaces) {
+		b = append(b, spaces...)
+		n -= len(spaces)
+	}
+	if n > 0 {
+		b = append(b, spaces[:n]...)
+	}
+	return b
+}
+
+func (w *QWriter) writeSpaces(n int) {
+	for n > len(spaces) {
+		w.Write(spaces)
+		n -= len(spaces)
+	}
+	if n > 0 {
+		w.Write(spaces[:n])
+	}
+}
+
+// WritePadLeft writes s to w with spaces padded on the left to reach width.
+func (w *QWriter) WritePadLeft(s string, width int) {
+	if width < 0 {
+		width = -width
+	}
+	padLen := width - len(s)
+	if padLen <= 0 {
+		w.S(s)
+		return
+	}
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = appendSpaces(bb.B, padLen)
+		bb.B = append(bb.B, s...)
+	} else {
+		w.writeSpaces(padLen)
+		w.S(s)
+	}
+}
+
+// WritePadRight writes s to w with spaces padded on the right to reach width.
+func (w *QWriter) WritePadRight(s string, width int) {
+	if width < 0 {
+		width = -width
+	}
+	padLen := width - len(s)
+	if padLen <= 0 {
+		w.S(s)
+		return
+	}
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = append(bb.B, s...)
+		bb.B = appendSpaces(bb.B, padLen)
+	} else {
+		w.S(s)
+		w.writeSpaces(padLen)
+	}
+}
+
+// WritePadding writes s to w with padding.
+// If width > 0, spaces are added to the left (right-aligned).
+// If width < 0, spaces are added to the right (left-aligned).
+// If width == 0, s is written without padding.
+func (w *QWriter) WritePadding(s string, width int) {
+	if width > 0 {
+		w.WritePadLeft(s, width)
+	} else if width < 0 {
+		w.WritePadRight(s, -width)
+	} else {
+		w.S(s)
+	}
+}
+
+// WritePadLeftZ writes z to w with spaces padded on the left to reach width.
+func (w *QWriter) WritePadLeftZ(z []byte, width int) {
+	if width < 0 {
+		width = -width
+	}
+	padLen := width - len(z)
+	if padLen <= 0 {
+		w.Z(z)
+		return
+	}
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = appendSpaces(bb.B, padLen)
+		bb.B = append(bb.B, z...)
+	} else {
+		w.writeSpaces(padLen)
+		w.Z(z)
+	}
+}
+
+// WritePadRightZ writes z to w with spaces padded on the right to reach width.
+func (w *QWriter) WritePadRightZ(z []byte, width int) {
+	if width < 0 {
+		width = -width
+	}
+	padLen := width - len(z)
+	if padLen <= 0 {
+		w.Z(z)
+		return
+	}
+	bb, ok := w.w.(*ByteBuffer)
+	if ok {
+		bb.B = append(bb.B, z...)
+		bb.B = appendSpaces(bb.B, padLen)
+	} else {
+		w.Z(z)
+		w.writeSpaces(padLen)
+	}
+}
+
+// WritePaddingZ writes z to w with padding.
+// If width > 0, spaces are added to the left (right-aligned).
+// If width < 0, spaces are added to the right (left-aligned).
+// If width == 0, z is written without padding.
+func (w *QWriter) WritePaddingZ(z []byte, width int) {
+	if width > 0 {
+		w.WritePadLeftZ(z, width)
+	} else if width < 0 {
+		w.WritePadRightZ(z, -width)
+	} else {
+		w.Z(z)
+	}
 }

@@ -487,13 +487,18 @@ func (p *parser) parseIf() error {
 }
 
 func (p *parser) tryParseCommonTags(tagBytes []byte) (bool, error) {
-	tagNameStr, prec := splitTagNamePrec(string(tagBytes))
+	tagStr := string(tagBytes)
+	tagNameStr, prec := splitTagNamePrec(tagStr)
+	baseTag, width, hasWidth := splitTagNameWidth(tagNameStr)
+	if hasWidth {
+		tagNameStr = baseTag
+	}
 	switch tagNameStr {
 	case "s", "v", "d", "dl", "dul", "f", "q", "z", "j", "u",
 		"s=", "v=", "d=", "dl=", "dul=", "f=", "q=", "z=", "j=", "u=",
 		"sz", "qz", "jz", "uz",
 		"sz=", "qz=", "jz=", "uz=":
-		if err := p.parseOutputTag(tagNameStr, prec); err != nil {
+		if err := p.parseOutputTag(tagNameStr, prec, width, hasWidth); err != nil {
 			return false, err
 		}
 	case "=", "=h", "=u", "=uh", "=q", "=qh", "=j", "=jh":
@@ -542,6 +547,36 @@ func (p *parser) tryParseCommonTags(tagBytes []byte) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func splitTagNameWidth(tagName string) (string, int, bool) {
+	raw := strings.HasSuffix(tagName, "=")
+	name := tagName
+	if raw {
+		name = name[:len(name)-1]
+	}
+	var prefix string
+	if strings.HasPrefix(name, "s") && !strings.HasPrefix(name, "sz") {
+		prefix = "s"
+	} else if strings.HasPrefix(name, "z") {
+		prefix = "z"
+	} else {
+		return tagName, 0, false
+	}
+
+	wStr := name[len(prefix):]
+	if len(wStr) == 0 {
+		return tagName, 0, false
+	}
+	width, err := strconv.Atoi(wStr)
+	if err != nil {
+		return tagName, 0, false
+	}
+	baseTag := prefix
+	if raw {
+		baseTag += "="
+	}
+	return baseTag, width, true
 }
 
 func splitTagNamePrec(tagName string) (string, int) {
@@ -705,7 +740,7 @@ func (p *parser) parseFuncCode() error {
 	return nil
 }
 
-func (p *parser) parseOutputTag(tagNameStr string, prec int) error {
+func (p *parser) parseOutputTag(tagNameStr string, prec, width int, hasWidth bool) error {
 	s := p.s
 	t, err := expectTagContents(s)
 	if err != nil {
@@ -724,6 +759,12 @@ func (p *parser) parseOutputTag(tagNameStr string, prec int) error {
 	}
 	if tagNameStr == "f" && prec >= 0 {
 		p.Printf("qw%s.N().FPrec(%s, %d)", mangleSuffix, t.Value, prec)
+	} else if hasWidth && (tagNameStr == "s" || tagNameStr == "z") {
+		if tagNameStr == "s" {
+			p.Printf("qw%s.%s().WritePadding(%s, %d)", mangleSuffix, filter, t.Value, width)
+		} else {
+			p.Printf("qw%s.%s().WritePaddingZ(%s, %d)", mangleSuffix, filter, t.Value, width)
+		}
 	} else {
 		tagNameStr = strings.ToUpper(tagNameStr)
 		p.Printf("qw%s.%s().%s(%s)", mangleSuffix, filter, tagNameStr, t.Value)

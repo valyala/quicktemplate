@@ -70,6 +70,9 @@ type scanner struct {
 	stripSpaceDepth    int
 	stripToNewLine     bool
 	rewind             bool
+
+	unreadByteBuf byte
+	hasUnread     bool
 }
 
 var tailOfLine = regexp.MustCompile(`^[[:blank:]]*(?:\r*\n)?`)
@@ -315,6 +318,15 @@ func (s *scanner) readTagName() bool {
 			continue
 		}
 		if s.c == '-' {
+			if bytes.Equal(s.t.Value, []byte("s")) || bytes.Equal(s.t.Value, []byte("z")) {
+				if b, err := s.r.Peek(1); err == nil && len(b) > 0 && b[0] >= '0' && b[0] <= '9' {
+					s.appendByte()
+					if !s.nextByte() {
+						return false
+					}
+					continue
+				}
+			}
 			s.unreadByte(s.c)
 			s.nextTokenID = tagContents
 			return true
@@ -370,13 +382,20 @@ func (s *scanner) nextByte() bool {
 	if s.err != nil {
 		return false
 	}
-	c, err := s.r.ReadByte()
-	if err != nil {
-		if err == io.EOF {
-			err = io.ErrUnexpectedEOF
+	var c byte
+	if s.hasUnread {
+		c = s.unreadByteBuf
+		s.hasUnread = false
+	} else {
+		var err error
+		c, err = s.r.ReadByte()
+		if err != nil {
+			if err == io.EOF {
+				err = io.ErrUnexpectedEOF
+			}
+			s.err = err
+			return false
 		}
-		s.err = err
-		return false
 	}
 	if c == '\n' {
 		s.line++
@@ -430,9 +449,11 @@ func (s *scanner) appendByte() {
 }
 
 func (s *scanner) unreadByte(c byte) {
-	if err := s.r.UnreadByte(); err != nil {
-		panic(fmt.Sprintf("BUG: bufio.Reader.UnreadByte returned non-nil error: %s", err))
+	if s.hasUnread {
+		panic("BUG: duplicate unreadByte call")
 	}
+	s.unreadByteBuf = s.c
+	s.hasUnread = true
 	if s.capture {
 		s.capturedValue = s.capturedValue[:len(s.capturedValue)-1]
 	}
