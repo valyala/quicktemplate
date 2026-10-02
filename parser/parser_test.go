@@ -510,6 +510,9 @@ func TestParserSuccess(t *testing.T) {
 
 	// comment with arbitrary tags
 	testParseSuccess(t, "{%func f()%}{%comment%}This {%endfunc%} is ignored{%endcomment%}{%endfunc%}")
+	testParseSuccess(t, "{%func f()%}{% // single-line comment %}{%endfunc%}")
+	testParseSuccess(t, "{%func f()%}{%//single-line comment without spaces%}{%endfunc%}")
+	testParseSuccess(t, "{% // package-level comment %}{%func f()%}{%endfunc%}")
 
 	// complex if
 	testParseSuccess(t, "{%func a()%}{%if n, err := w.Write(p); err != nil %}{%endif%}{%endfunc%}")
