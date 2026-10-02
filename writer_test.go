@@ -205,3 +205,112 @@ func testQWriter(t *testing.T, f func(wn, we *QWriter) (expectedS string)) {
 
 	ReleaseByteBuffer(bb)
 }
+
+func TestQWriterWritePadding(t *testing.T) {
+	testQWriter(t, func(wn, we *QWriter) string {
+		wn.WritePadding("foo", 5)
+		we.WritePadding("<foo>", 8)
+		wn.WritePadding("foo", -5)
+		we.WritePadding("<foo>", -8)
+		wn.WritePadding("foobar", 5)
+		we.WritePadding("<foobar>", 5)
+		wn.WritePadding("foo", 0)
+		we.WritePadding("<foo>", 0)
+		return "  foo   &lt;foo&gt;foo  &lt;foo&gt;   foobar&lt;foobar&gt;foo&lt;foo&gt;"
+	})
+}
+
+func TestQWriterWritePadLeft(t *testing.T) {
+	testQWriter(t, func(wn, we *QWriter) string {
+		wn.WritePadLeft("foo", 5)
+		we.WritePadLeft("<foo>", 8)
+		wn.WritePadLeft("foobar", 3)
+		wn.WritePadLeft("foo", 0)
+		wn.WritePadLeft("foo", -5)
+		return "  foo   &lt;foo&gt;foobarfoo  foo"
+	})
+}
+
+func TestQWriterWritePadRight(t *testing.T) {
+	testQWriter(t, func(wn, we *QWriter) string {
+		wn.WritePadRight("foo", 5)
+		we.WritePadRight("<foo>", 8)
+		wn.WritePadRight("foobar", 3)
+		wn.WritePadRight("foo", 0)
+		wn.WritePadRight("foo", -5)
+		return "foo  &lt;foo&gt;   foobarfoofoo  "
+	})
+}
+
+func TestQWriterWritePaddingZ(t *testing.T) {
+	testQWriter(t, func(wn, we *QWriter) string {
+		wn.WritePaddingZ([]byte("foo"), 5)
+		we.WritePaddingZ([]byte("<foo>"), 8)
+		wn.WritePaddingZ([]byte("foo"), -5)
+		we.WritePaddingZ([]byte("<foo>"), -8)
+		wn.WritePadLeftZ([]byte("bar"), 5)
+		wn.WritePadRightZ([]byte("bar"), 5)
+		return "  foo   &lt;foo&gt;foo  &lt;foo&gt;     barbar  "
+	})
+}
+
+func TestWriterPadding(t *testing.T) {
+	bb := AcquireByteBuffer()
+	qw := AcquireWriter(bb)
+
+	qw.WritePadding("foo", 5)
+	qw.WritePadding("bar", -5)
+	qw.WritePadLeft("abc", 6)
+	qw.WritePadRight("xyz", 6)
+	qw.WritePaddingZ([]byte("123"), 5)
+	qw.WritePadLeftZ([]byte("456"), 5)
+	qw.WritePadRightZ([]byte("789"), 5)
+
+	ReleaseWriter(qw)
+
+	expected := "  foobar     abcxyz     123  456789  "
+	if string(bb.B) != expected {
+		t.Fatalf("unexpected output: %q; expected: %q", string(bb.B), expected)
+	}
+	ReleaseByteBuffer(bb)
+}
+
+func TestWritePaddingLarge(t *testing.T) {
+	bb := AcquireByteBuffer()
+	qw := AcquireWriter(bb)
+
+	// width > len(spaces) (512)
+	qw.WritePadding("test", 600)
+	ReleaseWriter(qw)
+
+	if len(bb.B) != 600 {
+		t.Fatalf("expected length 600, got %d", len(bb.B))
+	}
+	if string(bb.B[596:]) != "test" {
+		t.Fatalf("expected test at end, got %q", string(bb.B[596:]))
+	}
+	for i := 0; i < 596; i++ {
+		if bb.B[i] != ' ' {
+			t.Fatalf("expected space at %d, got %c", i, bb.B[i])
+		}
+	}
+	ReleaseByteBuffer(bb)
+}
+
+func TestWritePaddingZeroAlloc(t *testing.T) {
+	bb := AcquireByteBuffer()
+	qw := AcquireWriter(bb)
+
+	allocs := testing.AllocsPerRun(1000, func() {
+		qw.WritePadding("foobar", 20)
+		qw.WritePadding("foobar", -20)
+		bb.Reset()
+	})
+
+	ReleaseWriter(qw)
+	ReleaseByteBuffer(bb)
+
+	if allocs != 0 {
+		t.Fatalf("expected 0 allocs, got %v", allocs)
+	}
+}

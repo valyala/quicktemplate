@@ -5,6 +5,7 @@ import (
 	"go/format"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/valyala/quicktemplate"
@@ -158,6 +159,81 @@ func TestParseFPrecSuccess(t *testing.T) {
 	// missing precision
 	testParseSuccess(t, "{% func a()%}{%f. 1.234 %}{% endfunc %}")
 	testParseSuccess(t, "{% func a()%}{%f.= 1.234 %}{% endfunc %}")
+}
+
+func TestParseWidthFailure(t *testing.T) {
+	// non-numeric width
+	testParseFailure(t, `{% func a()%}{%sfoo "bar" %}{% endfunc %}`)
+	testParseFailure(t, `{% func a()%}{%s.20 "bar" %}{% endfunc %}`)
+	testParseFailure(t, `{% func a()%}{%s.-20 "bar" %}{% endfunc %}`)
+
+	// minus without digits
+	testParseFailure(t, `{% func a()%}{%s--20 "bar" %}{% endfunc %}`)
+	testParseFailure(t, `{% func a()%}{%s-abc "bar" %}{% endfunc %}`)
+}
+
+func TestParseWidthSuccess(t *testing.T) {
+	// positive width (pad left)
+	testParseSuccess(t, `{% func a()%}{%s20 "foo" %}{% endfunc %}`)
+	testParseSuccess(t, `{% func a()%}{%s20= "foo" %}{% endfunc %}`)
+
+	// negative width (pad right)
+	testParseSuccess(t, `{% func a()%}{%s-20 "foo" %}{% endfunc %}`)
+	testParseSuccess(t, `{% func a()%}{%s-20= "foo" %}{% endfunc %}`)
+
+	// zero width
+	testParseSuccess(t, `{% func a()%}{%s0 "foo" %}{% endfunc %}`)
+	testParseSuccess(t, `{% func a()%}{%s0= "foo" %}{% endfunc %}`)
+	testParseSuccess(t, `{% func a()%}{%s-0 "foo" %}{% endfunc %}`)
+	testParseSuccess(t, `{% func a()%}{%s-0= "foo" %}{% endfunc %}`)
+
+	// byte slice
+	testParseSuccess(t, `{% func a()%}{%z20 []byte("foo") %}{% endfunc %}`)
+	testParseSuccess(t, `{% func a()%}{%z-20= []byte("foo") %}{% endfunc %}`)
+}
+
+func TestParseWidthGeneratedCode(t *testing.T) {
+	testCases := []struct {
+		template string
+		expected string
+	}{
+		{
+			template: `{% func a() %}{%s20 "foo" %}{% endfunc %}`,
+			expected: `qw422016.E().WritePadding("foo", 20)`,
+		},
+		{
+			template: `{% func a() %}{%s20= "foo" %}{% endfunc %}`,
+			expected: `qw422016.N().WritePadding("foo", 20)`,
+		},
+		{
+			template: `{% func a() %}{%s-20 "foo" %}{% endfunc %}`,
+			expected: `qw422016.E().WritePadding("foo", -20)`,
+		},
+		{
+			template: `{% func a() %}{%s-20= "foo" %}{% endfunc %}`,
+			expected: `qw422016.N().WritePadding("foo", -20)`,
+		},
+		{
+			template: `{% func a() %}{%z15 []byte("bar") %}{% endfunc %}`,
+			expected: `qw422016.E().WritePaddingZ([]byte("bar"), 15)`,
+		},
+		{
+			template: `{% func a() %}{%z-15= []byte("bar") %}{% endfunc %}`,
+			expected: `qw422016.N().WritePaddingZ([]byte("bar"), -15)`,
+		},
+	}
+
+	for _, tc := range testCases {
+		r := bytes.NewBufferString(tc.template)
+		w := &bytes.Buffer{}
+		if err := ParseNoLineComments(w, r, "test.qtpl", "memory"); err != nil {
+			t.Fatalf("unexpected error parsing %q: %s", tc.template, err)
+		}
+		out := w.String()
+		if !strings.Contains(out, tc.expected) {
+			t.Fatalf("for template %q:\nexpected code containing: %q\ngot:\n%s", tc.template, tc.expected, out)
+		}
+	}
 }
 
 func TestParseSwitchCaseSuccess(t *testing.T) {

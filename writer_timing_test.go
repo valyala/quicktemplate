@@ -251,6 +251,32 @@ func benchmarkQWriterS(b *testing.B, size int) {
 	})
 }
 
+func BenchmarkQWriterPaddingLeft(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		var w QWriter
+		bb := AcquireByteBuffer()
+		w.w = bb
+		for pb.Next() {
+			w.WritePadding("foobar", 20)
+			bb.Reset()
+		}
+		ReleaseByteBuffer(bb)
+	})
+}
+
+func BenchmarkQWriterPaddingRight(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		var w QWriter
+		bb := AcquireByteBuffer()
+		w.w = bb
+		for pb.Next() {
+			w.WritePadding("foobar", -20)
+			bb.Reset()
+		}
+		ReleaseByteBuffer(bb)
+	})
+}
+
 func createTestS(size int) string {
 	return string(createTestZ(size))
 }
