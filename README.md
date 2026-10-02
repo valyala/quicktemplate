@@ -263,9 +263,11 @@ FmtFunc uses fmt.Sprintf() inside output tag
 
 There are other useful tags supported by quicktemplate:
 
-  * `{% comment %}`
+  * `{% // comment %}` or `{% comment %}`
 
     ```qtpl
+    {% // This is a single-line comment %}
+
     {% comment %}
         This is a comment. It won't trap into the output.
         It may contain {% arbitrary tags %}. They are just ignored.

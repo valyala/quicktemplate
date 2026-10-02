@@ -116,6 +116,11 @@ func (s *scanner) Next() bool {
 			}
 		case tagName:
 			switch string(s.t.Value) {
+			case "//":
+				if !s.readTagContents() {
+					return false
+				}
+				continue
 			case "comment":
 				if !s.skipComment() {
 					return false
@@ -306,6 +311,23 @@ func (s *scanner) readTagName() bool {
 			}
 			s.nextTokenID = tagContents
 			return true
+		}
+		if s.c == '/' && len(s.t.Value) == 0 {
+			s.appendByte()
+			if !s.nextByte() {
+				return false
+			}
+			if s.c == '/' {
+				s.appendByte()
+				if !s.nextByte() {
+					return false
+				}
+				s.nextTokenID = tagContents
+				return true
+			}
+			s.err = fmt.Errorf("unexpected character: '%c'", s.c)
+			s.unreadByte('~')
+			return false
 		}
 		if (s.c >= 'a' && s.c <= 'z') || (s.c >= 'A' && s.c <= 'Z') || (s.c >= '0' && s.c <= '9') || s.c == '=' || s.c == '.' {
 			s.appendByte()

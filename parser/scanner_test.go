@@ -220,6 +220,13 @@ func TestScannerCommentSuccess(t *testing.T) {
 	testScannerSuccess(t, "{%comment%}foo{%bar {%endcomment%}", nil)
 	testScannerSuccess(t, "{%comment%}foo{%bar&^{%endcomment%}", nil)
 	testScannerSuccess(t, "{%comment%}foo{% bar\n\rs%{%endcomment%}", nil)
+	testScannerSuccess(t, "{% // this is a comment %}", nil)
+	testScannerSuccess(t, "{%//this is a comment%}", nil)
+	testScannerSuccess(t, "{% // %}", nil)
+	testScannerSuccess(t, "a{% // comment %}b", []tt{
+		{ID: text, Value: "a"},
+		{ID: text, Value: "b"},
+	})
 	testScannerSuccess(t, "xx{%x%}www{% comment aux data %}aaa{% comment %}{% endcomment %}yy", []tt{
 		{ID: text, Value: "xx"},
 		{ID: tagName, Value: "x"},
@@ -230,6 +237,8 @@ func TestScannerCommentSuccess(t *testing.T) {
 }
 
 func TestScannerCommentFailure(t *testing.T) {
+	testScannerFailure(t, "{% / %}")
+	testScannerFailure(t, "{% // no end")
 	testScannerFailure(t, "{%comment%}...no endcomment")
 	testScannerFailure(t, "{% comment %}foobar{% endcomment")
 }
