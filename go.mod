@@ -1,6 +1,6 @@
 module github.com/valyala/quicktemplate
 
-go 1.17
+go 1.24
 
 require (
 	github.com/valyala/bytebufferpool v1.0.0
@@ -9,5 +9,5 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 )
